@@ -122,76 +122,93 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
   popBlocks.forEach((block) => {
     if (!block.trim()) return;
 
-    let currentElements: SlideElement[] = [];
+    const paragraphs = block.trim().split(/\n\s*\n/);
+    let currentChunk = '';
+    const chunks: string[] = [];
+    const MAX_CHARS_PER_SLIDE = aspectRatio === '16:9' ? 700 : 900; 
 
-    // Add Logo WA Fort
-    currentElements.push({
-      id: generateId(),
-      type: 'image',
-      content: 'wafort_logo',
-      x: 100 - paddingX - logoWidth,
-      y: 3,
-      width: logoWidth,
-      height: logoHeight,
-      imageFit: 'contain'
+    paragraphs.forEach((p) => {
+      if (currentChunk.length + p.length > MAX_CHARS_PER_SLIDE && currentChunk.length > 0) {
+        chunks.push(currentChunk);
+        currentChunk = p;
+      } else {
+        currentChunk = currentChunk ? currentChunk + '\n\n' + p : p;
+      }
     });
+    if (currentChunk) chunks.push(currentChunk);
 
-    const textContent = block.trim();
-    const charCount = textContent.length;
-    
-    // Dynamic Font Sizing to prevent text cutoff on huge POPs
-    let baseSize = aspectRatio === '16:9' ? 18 : 22;
-    if (charCount > 300) baseSize -= 2;
-    if (charCount > 600) baseSize -= 4;
-    if (charCount > 900) baseSize -= 6;
-    if (charCount > 1200) baseSize -= 8;
-    
-    // Body Text: Exactly as pasted
-    currentElements.push({
-      id: generateId(),
-      type: 'text',
-      content: textContent,
-      x: paddingX,
-      y: 15,
-      width: 100 - (paddingX * 2),
-      height: 65, // Let the container be large, text will wrap natively inside
-      fontSize: baseSize,
-      fontFamily: 'body',
-      color: 'text',
-      bold: false,
-      align: 'left'
-    });
+    chunks.forEach((chunk, index) => {
+      let currentElements: SlideElement[] = [];
 
-    // Signature Line
-    currentElements.push({
-      id: generateId(),
-      type: 'shape',
-      x: paddingX + 15,
-      y: 85,
-      width: 70 - (paddingX * 2),
-      height: 0.5,
-      color: 'accent'
-    });
+      // Add Logo WA Fort
+      currentElements.push({
+        id: generateId(),
+        type: 'image',
+        content: 'wafort_logo',
+        x: 100 - paddingX - logoWidth,
+        y: 3,
+        width: logoWidth,
+        height: logoHeight,
+        imageFit: 'contain'
+      });
 
-    currentElements.push({
-      id: generateId(),
-      type: 'text',
-      content: 'Assinatura do Responsável',
-      x: paddingX + 15,
-      y: 87,
-      width: 70 - (paddingX * 2),
-      height: 5,
-      fontSize: 14,
-      fontFamily: 'body',
-      color: 'text',
-      bold: true,
-      align: 'center'
-    });
+      const textContent = chunk.trim();
+      const charCount = textContent.length;
+      
+      let baseSize = aspectRatio === '16:9' ? 18 : 22;
+      if (charCount > 300) baseSize -= 2;
+      if (charCount > 600) baseSize -= 4;
+      if (charCount > 900) baseSize -= 6;
+      if (charCount > 1200) baseSize -= 8;
+      
+      currentElements.push({
+        id: generateId(),
+        type: 'text',
+        content: textContent,
+        x: paddingX,
+        y: 15,
+        width: 100 - (paddingX * 2),
+        height: 65, 
+        fontSize: baseSize,
+        fontFamily: 'body',
+        color: 'text',
+        bold: false,
+        align: 'left'
+      });
 
-    slides.push({
-      id: 'pop-' + generateId(),
-      elements: currentElements,
-      backgroundColor: '#ffffff'
+      // Signature Line ONLY on the last slide of the block
+      if (index === chunks.length - 1) {
+        currentElements.push({
+          id: generateId(),
+          type: 'shape',
+          x: paddingX + 15,
+          y: 85,
+          width: 70 - (paddingX * 2),
+          height: 0.5,
+          color: 'accent'
+        });
+
+        currentElements.push({
+          id: generateId(),
+          type: 'text',
+          content: 'Assinatura do Responsável',
+          x: paddingX + 15,
+          y: 87,
+          width: 70 - (paddingX * 2),
+          height: 5,
+          fontSize: 14,
+          fontFamily: 'body',
+          color: 'text',
+          bold: true,
+          align: 'center'
+        });
+      }
+
+      slides.push({
+        id: 'pop-' + generateId(),
+        elements: currentElements,
+        backgroundColor: '#ffffff'
+      });
     });
   });
 
