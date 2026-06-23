@@ -62,6 +62,7 @@ export default function App() {
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [activeTab, setActiveTab] = useState<'slides' | 'editor' | 'batch' | 'images' | 'theme'>('slides');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
+  const [draggingNode, setDraggingNode] = useState<{ id: string, startX: number, startY: number, startElX: number, startElY: number } | null>(null);
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
   const [appTheme, setAppTheme] = useState<'light' | 'dark'>(() => {
     try {
@@ -1669,12 +1670,29 @@ export default function App() {
             {/* STAGE: THE 16:9 DYNAMIC CANVAS FRAME */}
             <div 
               className={isFullscreen 
-                ? "w-full max-w-6xl relative shadow-2xl rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 transition-all duration-300 max-h-[82vh]"
-                : "w-full relative shadow-2xl rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 transition-all duration-300"
+                ? "w-full max-w-6xl relative shadow-2xl rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 transition-all duration-300 max-h-[82vh] touch-none"
+                : "w-full relative shadow-2xl rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 transition-all duration-300 touch-none"
               }
               style={{ aspectRatio: aspectRatio === '16:9' ? '16/9' : '9/16' }}
             >
-              <div ref={canvasRef} className="relative w-full overflow-hidden select-none" style={{ aspectRatio: aspectRatio === '16:9' ? '16/9' : '9/16' }}>
+              <div 
+                ref={canvasRef} 
+                className="relative w-full overflow-hidden select-none" 
+                style={{ aspectRatio: aspectRatio === '16:9' ? '16/9' : '9/16' }}
+                onPointerMove={(e) => {
+                  if (!draggingNode || !canvasRef.current) return;
+                  const rect = canvasRef.current.getBoundingClientRect();
+                  const dx = e.clientX - draggingNode.startX;
+                  const dy = e.clientY - draggingNode.startY;
+                  const dxPercent = (dx / rect.width) * 100;
+                  const dyPercent = (dy / rect.height) * 100;
+                  const newX = Math.max(0, draggingNode.startElX + dxPercent);
+                  const newY = Math.max(0, draggingNode.startElY + dyPercent);
+                  updateElement(draggingNode.id, { x: newX, y: newY });
+                }}
+                onPointerUp={() => setDraggingNode(null)}
+                onPointerLeave={() => setDraggingNode(null)}
+              >
                 
                 {/* Animate slide transitions */}
                 <AnimatePresence mode="wait">
@@ -1708,16 +1726,26 @@ export default function App() {
                         return (
                           <div
                             key={el.id}
-                            onClick={(e: React.MouseEvent) => {
+                            onPointerDown={(e) => {
                               e.stopPropagation();
                               setSelectedElementId(el.id);
+                              if (editingElementId !== el.id) {
+                                (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                                setDraggingNode({
+                                  id: el.id,
+                                  startX: e.clientX,
+                                  startY: e.clientY,
+                                  startElX: el.x,
+                                  startElY: el.y
+                                });
+                              }
                             }}
                             onDoubleClick={(e) => {
                               if (el.type !== 'text') return;
                               e.stopPropagation();
                               setEditingElementId(el.id);
                             }}
-                            className={`group border ${selectedElementId === el.id ? 'border-amber-400 shadow-md ring-2 ring-amber-400/50 z-[100]' : 'border-transparent hover:border-blue-400 hover:border-dashed z-10'} transition-colors duration-100 flex items-center justify-center`}
+                            className={`group border ${selectedElementId === el.id ? 'border-amber-400 shadow-md ring-2 ring-amber-400/50 z-[100]' : 'border-transparent hover:border-blue-400 hover:border-dashed z-10'} ${draggingNode?.id === el.id ? 'cursor-grabbing opacity-90' : 'cursor-grab'} transition-colors duration-100 flex items-center justify-center`}
                             style={{ 
                               position: 'absolute',
                               left: `${el.x}%`,
@@ -1772,8 +1800,8 @@ export default function App() {
                                       e.stopPropagation();
                                       setEditingElementId(el.id);
                                     }}
-                                    className="absolute -top-3 -right-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1.5 shadow-lg flex items-center justify-center z-50 transition-transform active:scale-95"
-                                    title="Editar Texto (Toque duplo)"
+                                    className="absolute -top-3 -right-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1.5 shadow-lg flex items-center justify-center z-50 transition-transform active:scale-95 cursor-pointer"
+                                    title="Editar Texto"
                                   >
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                   </button>
