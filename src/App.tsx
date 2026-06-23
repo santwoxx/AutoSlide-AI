@@ -39,7 +39,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { SlideItem, UploadedImage, ThemeId, TransitionType, AspectRatio } from './types';
 import { THEMES } from './themes';
 import { INITIAL_SLIDES } from './initialData';
-import { parseDocumentToSlides, formatBytes, generateId } from './utils';
+import { parseDocumentToSlides, formatBytes, generateId, parsePOPDocumentToSlides } from './utils';
 import { generatePythonScript } from './pythonScriptGenerator';
 import { exportToPowerpoint } from './pptxGenerator';
 
@@ -383,6 +383,30 @@ export default function App() {
     );
     showToast('Imagem removida do repositório local.');
     addLog(`[WARN] Mídia ID "${imgId}" desmarcada e removida do workspace.`);
+    addLog('[SUCCESS] Apresentação gerada via Batch Processor.');
+  };
+
+  const runPOPCompile = () => {
+    if (!batchText.trim()) {
+      showToast('Insira o texto do POP para gerar.');
+      return;
+    }
+
+    const hasLogo = uploadedImages.some(img => img.id === 'wafort_logo');
+    if (!hasLogo) {
+      setUploadedImages(prev => [...prev, {
+        id: 'wafort_logo',
+        name: 'Logo WA Fort',
+        dataUrl: 'https://i.ibb.co/C32GVNqh/logo.webp'
+      }]);
+    }
+
+    const generated = parsePOPDocumentToSlides(batchText, aspectRatio);
+    setSlides(generated);
+    setActiveTab('slides');
+    setSelectedThemeId('royal_corporate'); // Garante que seja num tema corporativo azul/branco
+    showToast(`POP WA Fort gerado! (${generated.length} slides)`);
+    addLog('[SUCCESS] Procedimento Operacional WA Fort gerado via Inteligência POP.');
   };
 
   // ----------------------------------------------------
@@ -672,8 +696,30 @@ export default function App() {
 
   // Reference for quick batch pre-fills
   const insertMockMarkdownExample = () => {
-    setBatchText(`# Apresentação de Vendas\nRelatório Trimestral Comercial\n---\n# Nossa Filosofia\n- O cliente é o centro absoluto de cada decisão estratégica de design\n- Entregas velozes alimentam feedback loops sadios\n- Automações reduzem desgaste de engenharia\n---\n# Crescimento Trimestral\n+145%\nReceita Mensal Recorrente (MRR)\nResultados verificados com a equipe contábil interna auditada de ponta a ponta.\n---\n# Visão do Setor\n"A melhor automação é aquela que substitui tarefas exaustivas por scripts limpos e deterministas."\n— Engenharia de Operações, Diretor`);
-    showToast('Modelo de exemplo inserido na área de importação.');
+    const wafortMock = `POP - Procedimento Operacional Padrão.
+
+Triagem de Atendimentos
+Objetivo
+Padronizar o processo de triagem de atendimentos realizados pela portaria, garantindo qualidade no atendimento e cumprimento do fluxo operacional.
+Procedimento Operacional Padrão
+Peço atenção quanto ao padrão de atendimento, seguindo o fluxo abaixo:
+1. Tentativas de contato via interfone
+•	Realizar 03 tentativas de contato para o interfone da unidade;
+•	Aguardar tempo adequado entre as chamadas para possibilitar o atendimento do morador.
+2. Tentativas de contato via telefone pessoal
+•	Caso não obtenha retorno pelo interfone, realizar 02 tentativas de contato para o telefone pessoal cadastrado.
+3. Retorno ao entregador/visitante
+•	Não havendo sucesso nas tentativas de contato, retornar ao entregador ou visitante informando a impossibilidade de contato com o morador.
+4. Envio de mensagem corporativa
+•	Enviar mensagem através do James (Whatsapp Corporativo), registrando a tentativa de contato e informando a situação ao morador.
+Observações
+•	Todas as tentativas devem ser realizadas com cordialidade e clareza nas informações;
+•	Seguir sempre as orientações e observações cadastradas para cada unidade;
+•	Manter atenção ao correto registro das informações durante o atendimento.
+Responsabilidade
+Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`;
+    setBatchText(wafortMock);
+    addLog('Texto de exemplo POP carregado.');
   };
 
   if (isAppLoading) {
@@ -1269,11 +1315,11 @@ export default function App() {
                   <div className="flex justify-between items-center text-xs">
                     <button
                       onClick={insertMockMarkdownExample}
-                      className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 font-extrabold cursor-pointer"
+                      className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 font-extrabold cursor-pointer bg-blue-50 px-2 py-1 rounded-md"
                     >
-                      <RefreshCw className="w-3.5 h-3.5" /> Preencher Exemplo
+                      <RefreshCw className="w-3.5 h-3.5" /> Exemplo: Triagem de Atendimentos
                     </button>
-                    <span className="text-slate-500 font-bold font-mono">Marcador: ---</span>
+                    <span className="text-slate-500 font-bold font-mono">Motor Inteligente Otimizado</span>
                   </div>
 
                   <textarea
@@ -1294,11 +1340,25 @@ export default function App() {
                 </div>
 
                 <button
-                  onClick={runBatchCompile}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-2.5 px-4 rounded-xl transition duration-155 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-blue-100"
+                  onClick={runPOPCompile}
+                  className="w-full bg-indigo-900 hover:bg-indigo-800 text-amber-400 font-extrabold py-3 px-4 rounded-xl transition duration-155 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-indigo-950/20 border border-amber-500/30 mt-4"
                 >
-                  <Zap className="w-4 h-4 text-amber-400 fill-amber-400/20" />
-                  <span>Processar Roteiro e Gerar Slides</span>
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  <span>Gerar Procedimento WA Fort (POP)</span>
+                </button>
+
+                <div className="flex items-center gap-4 my-2">
+                  <div className="h-px bg-slate-200 flex-1"></div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Outras opções</span>
+                  <div className="h-px bg-slate-200 flex-1"></div>
+                </div>
+
+                <button
+                  onClick={runBatchCompile}
+                  className="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg transition duration-155 flex items-center justify-center gap-2 cursor-pointer shadow-sm text-xs"
+                >
+                  <Zap className="w-3 h-3 text-slate-500" />
+                  <span>Processar Roteiro Genérico (via "---")</span>
                 </button>
               </div>
             )}
