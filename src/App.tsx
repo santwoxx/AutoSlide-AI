@@ -1171,11 +1171,35 @@ Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`
                       if (!el) return <p className="text-xs text-slate-500">Elemento não encontrado.</p>;
                       return (
                         <div className="p-4 border border-blue-200 bg-blue-50/50 rounded-xl space-y-4 shadow-sm relative">
-                          <div className="flex justify-between items-center pb-2 border-b border-blue-200/50">
+                          <div className="flex justify-between items-center pb-2 border-b border-blue-200/50 mb-4">
                             <span className="text-xs font-bold text-blue-900 uppercase">Editando: {el.type === 'text' ? 'Caixa de Texto' : el.type === 'image' ? 'Mídia/Imagem' : 'Forma'}</span>
                             <button onClick={() => deleteElement(el.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors" title="Deletar Elemento">
                               <Trash2 className="w-4 h-4" />
                             </button>
+                          </div>
+
+                          <div className="bg-white/60 p-3 rounded-lg border border-blue-100 shadow-sm mb-4">
+                            <div className="flex items-center gap-1.5 mb-3">
+                              <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider font-mono">Posição e Tamanho (%)</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Eixo X (Esq/Dir)</label>
+                                <input type="number" step="0.5" value={el.x} onChange={(e) => updateElement(el.id, { x: Number(e.target.value) })} className="w-full p-2 border border-slate-200 rounded-md text-xs bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50" />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Eixo Y (Cima/Baixo)</label>
+                                <input type="number" step="0.5" value={el.y} onChange={(e) => updateElement(el.id, { y: Number(e.target.value) })} className="w-full p-2 border border-slate-200 rounded-md text-xs bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50" />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Largura</label>
+                                <input type="number" step="0.5" min="1" value={el.width} onChange={(e) => updateElement(el.id, { width: Number(e.target.value) })} className="w-full p-2 border border-slate-200 rounded-md text-xs bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50" />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Altura</label>
+                                <input type="number" step="0.5" min="1" value={el.height} onChange={(e) => updateElement(el.id, { height: Number(e.target.value) })} className="w-full p-2 border border-slate-200 rounded-md text-xs bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50" />
+                              </div>
+                            </div>
                           </div>
                           
                           {el.type === 'text' && (
