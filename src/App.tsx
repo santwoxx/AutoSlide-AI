@@ -63,6 +63,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'slides' | 'editor' | 'batch' | 'images' | 'theme'>('slides');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [draggingNode, setDraggingNode] = useState<{ id: string, startX: number, startY: number, startElX: number, startElY: number } | null>(null);
+  const [resizingNode, setResizingNode] = useState<{ id: string, startX: number, startY: number, startWidth: number, startHeight: number, direction: 'r' | 'b' | 'br' } | null>(null);
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
@@ -1661,18 +1662,37 @@ export default function App() {
                 className="relative w-full overflow-hidden select-none" 
                 style={{ aspectRatio: aspectRatio === '16:9' ? '16/9' : '9/16' }}
                 onPointerMove={(e) => {
-                  if (!draggingNode || !canvasRef.current) return;
+                  if (!canvasRef.current) return;
                   const rect = canvasRef.current.getBoundingClientRect();
-                  const dx = e.clientX - draggingNode.startX;
-                  const dy = e.clientY - draggingNode.startY;
-                  const dxPercent = (dx / rect.width) * 100;
-                  const dyPercent = (dy / rect.height) * 100;
-                  const newX = Math.max(0, draggingNode.startElX + dxPercent);
-                  const newY = Math.max(0, draggingNode.startElY + dyPercent);
-                  updateElement(draggingNode.id, { x: newX, y: newY });
+                  
+                  if (draggingNode) {
+                    const dx = e.clientX - draggingNode.startX;
+                    const dy = e.clientY - draggingNode.startY;
+                    const dxPercent = (dx / rect.width) * 100;
+                    const dyPercent = (dy / rect.height) * 100;
+                    const newX = Math.max(0, draggingNode.startElX + dxPercent);
+                    const newY = Math.max(0, draggingNode.startElY + dyPercent);
+                    updateElement(draggingNode.id, { x: newX, y: newY });
+                    return;
+                  }
+
+                  if (resizingNode) {
+                    const dx = e.clientX - resizingNode.startX;
+                    const dy = e.clientY - resizingNode.startY;
+                    const dxPercent = (dx / rect.width) * 100;
+                    const dyPercent = (dy / rect.height) * 100;
+                    
+                    let newW = resizingNode.startWidth;
+                    let newH = resizingNode.startHeight;
+                    
+                    if (resizingNode.direction.includes('r')) newW = Math.max(2, resizingNode.startWidth + dxPercent);
+                    if (resizingNode.direction.includes('b')) newH = Math.max(2, resizingNode.startHeight + dyPercent);
+                    
+                    updateElement(resizingNode.id, { width: newW, height: newH });
+                  }
                 }}
-                onPointerUp={() => setDraggingNode(null)}
-                onPointerLeave={() => setDraggingNode(null)}
+                onPointerUp={() => { setDraggingNode(null); setResizingNode(null); }}
+                onPointerLeave={() => { setDraggingNode(null); setResizingNode(null); }}
               >
                 
                 {/* Animate slide transitions */}
@@ -1776,16 +1796,44 @@ export default function App() {
                                 )}
                                 
                                 {selectedElementId === el.id && editingElementId !== el.id && (
-                                  <button
-                                    onPointerDown={(e) => {
-                                      e.stopPropagation();
-                                      setEditingElementId(el.id);
-                                    }}
-                                    className="absolute -top-3 -right-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1.5 shadow-lg flex items-center justify-center z-50 transition-transform active:scale-95 cursor-pointer"
-                                    title="Editar Texto"
-                                  >
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                  </button>
+                                  <>
+                                    <button
+                                      onPointerDown={(e) => {
+                                        e.stopPropagation();
+                                        setEditingElementId(el.id);
+                                      }}
+                                      className="absolute -top-3 -right-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1.5 shadow-lg flex items-center justify-center z-50 transition-transform active:scale-95 cursor-pointer"
+                                      title="Editar Texto"
+                                    >
+                                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                    </button>
+                                    
+                                    {/* Resize Handles */}
+                                    <div 
+                                      className="absolute right-0 bottom-0 w-3 h-3 bg-white border-2 border-amber-500 rounded-full cursor-se-resize translate-x-1/2 translate-y-1/2 z-50 shadow-sm hover:scale-125 transition-transform"
+                                      onPointerDown={(e) => {
+                                        e.stopPropagation();
+                                        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                                        setResizingNode({ id: el.id, startX: e.clientX, startY: e.clientY, startWidth: el.width, startHeight: el.height, direction: 'br' });
+                                      }}
+                                    />
+                                    <div 
+                                      className="absolute right-0 top-1/2 w-3 h-3 bg-white border-2 border-amber-500 rounded-full cursor-e-resize translate-x-1/2 -translate-y-1/2 z-50 shadow-sm hover:scale-125 transition-transform"
+                                      onPointerDown={(e) => {
+                                        e.stopPropagation();
+                                        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                                        setResizingNode({ id: el.id, startX: e.clientX, startY: e.clientY, startWidth: el.width, startHeight: el.height, direction: 'r' });
+                                      }}
+                                    />
+                                    <div 
+                                      className="absolute bottom-0 left-1/2 w-3 h-3 bg-white border-2 border-amber-500 rounded-full cursor-s-resize -translate-x-1/2 translate-y-1/2 z-50 shadow-sm hover:scale-125 transition-transform"
+                                      onPointerDown={(e) => {
+                                        e.stopPropagation();
+                                        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                                        setResizingNode({ id: el.id, startX: e.clientX, startY: e.clientY, startWidth: el.width, startHeight: el.height, direction: 'b' });
+                                      }}
+                                    />
+                                  </>
                                 )}
                               </>
                             )}
