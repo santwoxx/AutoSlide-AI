@@ -136,16 +136,26 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
       imageFit: 'contain'
     });
 
+    const textContent = block.trim();
+    const charCount = textContent.length;
+    
+    // Dynamic Font Sizing to prevent text cutoff on huge POPs
+    let baseSize = aspectRatio === '16:9' ? 18 : 22;
+    if (charCount > 300) baseSize -= 2;
+    if (charCount > 600) baseSize -= 4;
+    if (charCount > 900) baseSize -= 6;
+    if (charCount > 1200) baseSize -= 8;
+    
     // Body Text: Exactly as pasted
     currentElements.push({
       id: generateId(),
       type: 'text',
-      content: block.trim(),
+      content: textContent,
       x: paddingX,
       y: 15,
       width: 100 - (paddingX * 2),
       height: 65, // Let the container be large, text will wrap natively inside
-      fontSize: aspectRatio === '16:9' ? 18 : 22,
+      fontSize: baseSize,
       fontFamily: 'body',
       color: 'text',
       bold: false,

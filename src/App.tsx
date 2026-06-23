@@ -1853,13 +1853,14 @@ Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`
                                       setEditingElementId(null);
                                     }}
                                     onKeyDown={(e) => {
-                                      if (e.key === 'Enter' && !e.shiftKey) {
+                                      if (e.key === 'Enter' && e.ctrlKey) {
                                         e.preventDefault();
                                         updateElement(el.id, { content: e.currentTarget.value });
                                         setEditingElementId(null);
                                       }
                                     }}
                                     className="w-full h-full bg-blue-50/90 text-blue-900 rounded p-2 focus:outline-none resize-none"
+                                    placeholder="Ctrl+Enter para salvar"
                                     style={{ 
                                       fontSize: `${el.fontSize || 24}px`, 
                                       textAlign: el.align || 'left',
