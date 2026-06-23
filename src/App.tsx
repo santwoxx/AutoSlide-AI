@@ -1639,19 +1639,19 @@ export default function App() {
                   onClick={() => setIsPlaying(!isPlaying)}
                   className={`p-2 rounded-lg transition-colors cursor-pointer text-xs font-semibold flex items-center gap-1.5 ${
                     isPlaying 
-                      ? 'bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 text-emerald-400' 
+                      ? 'bg-blue-900 hover:bg-blue-800 border border-blue-600 text-amber-400' 
                       : 'bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white'
                   }`}
                   title="Play / Pause automático"
                 >
-                  <Play className={`w-3.5 h-3.5 ${isPlaying ? 'fill-emerald-400 text-emerald-400 border-none' : ''}`} />
+                  <Play className={`w-3.5 h-3.5 ${isPlaying ? 'fill-amber-400 text-amber-400 border-none' : ''}`} />
                   <span className="hidden sm:inline">{isPlaying ? 'Tocando' : 'Slideshow'}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setIsFullscreen(false)}
-                  className="p-2 ml-1 bg-red-950/40 hover:bg-red-900/60 text-red-300 hover:text-white rounded-lg border border-red-950/30 transition-colors cursor-pointer text-xs font-bold flex items-center gap-1"
+                  className="p-2 ml-1 bg-blue-950/40 hover:bg-blue-900/60 text-blue-300 hover:text-white rounded-lg border border-blue-900/30 transition-colors cursor-pointer text-xs font-bold flex items-center gap-1"
                   title="Sair da tela cheia (Esc)"
                 >
                   <Minimize2 className="w-3.5 h-3.5" />
@@ -1700,22 +1700,24 @@ export default function App() {
                           <Rnd
                             key={el.id}
                             bounds="parent"
+                            minWidth={50}
+                            minHeight={30}
                             disableDragging={!isCanvaMode || isEditing}
                             enableResizing={isCanvaMode && !isEditing}
                             position={{ x: (el.x / 100) * canvasSize.w, y: (el.y / 100) * canvasSize.h }}
                             size={{ width: `${el.width}%`, height: `${el.height}%` }}
                             onDragStop={(e, d) => {
-                              const newX = (d.x / canvasSize.w) * 100;
-                              const newY = (d.y / canvasSize.h) * 100;
+                              const newX = Math.max(0, (d.x / canvasSize.w) * 100);
+                              const newY = Math.max(0, (d.y / canvasSize.h) * 100);
                               updateElement(el.id, { x: newX, y: newY });
                             }}
                             onResizeStop={(e, direction, ref, delta, position) => {
                               const pxW = parseFloat(ref.style.width);
                               const pxH = parseFloat(ref.style.height);
-                              const newW = (pxW / canvasSize.w) * 100;
-                              const newH = (pxH / canvasSize.h) * 100;
-                              const newX = (position.x / canvasSize.w) * 100;
-                              const newY = (position.y / canvasSize.h) * 100;
+                              const newW = Math.max(2, (pxW / canvasSize.w) * 100);
+                              const newH = Math.max(2, (pxH / canvasSize.h) * 100);
+                              const newX = Math.max(0, (position.x / canvasSize.w) * 100);
+                              const newY = Math.max(0, (position.y / canvasSize.h) * 100);
                               updateElement(el.id, {
                                 width: newW,
                                 height: newH,
@@ -1733,7 +1735,8 @@ export default function App() {
                               e.stopPropagation();
                               setEditingElementId(el.id);
                             }}
-                            className={`absolute group border ${isCanvaMode && selectedElementId === el.id ? 'border-blue-500 shadow-md ring-2 ring-blue-500/50 z-50' : 'border-transparent hover:border-blue-300 hover:border-dashed'} transition-colors duration-100 flex items-center justify-center`}
+                            className={`group border ${isCanvaMode && selectedElementId === el.id ? 'border-amber-400 shadow-md ring-2 ring-amber-400/50 z-[100]' : 'border-transparent hover:border-blue-400 hover:border-dashed z-10'} transition-colors duration-100 flex items-center justify-center`}
+                            style={{ position: 'absolute' }}
                           >
                           <div className={`w-full h-full flex ${el.type === 'text' ? 'flex-col' : 'items-center justify-center'}`}>
                             {el.type === 'text' && (
@@ -1767,7 +1770,7 @@ export default function App() {
                                       textAlign: el.align || 'left',
                                       fontWeight: el.bold ? 'bold' : 'normal'
                                     }}
-                                    className={`w-full h-full break-words select-text p-2 ${
+                                    className={`w-full h-full whitespace-pre-wrap overflow-hidden select-text p-2 ${
                                       el.color === 'accent' ? currentTheme.accent : el.color === 'card' ? 'text-white' : ''
                                     }`}
                                   >
