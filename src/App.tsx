@@ -1862,15 +1862,13 @@ Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`
                     updateElement(resizingNode.id, { width: newW, height: newH });
                   }
                 }}
-                onPointerUp={() => {
+                onPointerUp={(e) => {
                   setDraggingNode(null);
                   setResizingNode(null);
                   setSnapLines([]);
-                }}
-                onPointerLeave={() => {
-                  setDraggingNode(null);
-                  setResizingNode(null);
-                  setSnapLines([]);
+                  if (e.target && (e.target as HTMLElement).hasPointerCapture && (e.target as HTMLElement).hasPointerCapture(e.pointerId)) {
+                     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+                  }
                 }}
               >
                 <div 
