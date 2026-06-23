@@ -139,8 +139,11 @@ export function parseDocumentToSlides(text: string): SlideItem[] {
     }
 
     let currentChunk = '';
+    let currentVisualLines = 0;
     const chunks: string[] = [];
-    const MAX_CHARS_PER_SLIDE = aspectRatio === '16:9' ? 650 : 800; // Increased capacity since no sidebar
+    const MAX_VISUAL_LINES = aspectRatio === '16:9' ? 12 : 16;
+    const CHARS_PER_LINE = aspectRatio === '16:9' ? 75 : 55;
+    const MAX_CHARS_PER_SLIDE = aspectRatio === '16:9' ? 700 : 850;
 
     contentLines.forEach((line) => {
       // Simulate sections with icons/numbers for a premium look
@@ -151,11 +154,20 @@ export function parseDocumentToSlides(text: string): SlideItem[] {
         formattedLine = line; // Keep bullets
       }
 
-      if (currentChunk.length + formattedLine.length > MAX_CHARS_PER_SLIDE && currentChunk.trim().length > 0) {
+      // Estimate how many visual lines this text will occupy
+      // An empty line takes 1 visual line. A long line takes length / CHARS_PER_LINE.
+      const estimatedLines = Math.max(1, Math.ceil(formattedLine.length / CHARS_PER_LINE));
+
+      const willExceedLines = currentVisualLines + estimatedLines > MAX_VISUAL_LINES;
+      const willExceedChars = currentChunk.length + formattedLine.length > MAX_CHARS_PER_SLIDE;
+
+      if ((willExceedLines || willExceedChars) && currentChunk.trim().length > 0) {
         chunks.push(currentChunk.trim());
         currentChunk = formattedLine;
+        currentVisualLines = estimatedLines;
       } else {
         currentChunk = currentChunk ? currentChunk + '\n' + formattedLine : formattedLine;
+        currentVisualLines += estimatedLines;
       }
     });
     if (currentChunk) chunks.push(currentChunk);
