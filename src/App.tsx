@@ -46,6 +46,15 @@ import { exportToPowerpoint } from './pptxGenerator';
 
 export default function App() {
   // Core State
+  const [isAppLoading, setIsAppLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [slides, setSlides] = useState<SlideItem[]>(INITIAL_SLIDES);
   const [activeSlideId, setActiveSlideId] = useState<string>(INITIAL_SLIDES[0].id);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
@@ -682,6 +691,25 @@ export default function App() {
     setBatchText(`# Apresentação de Vendas\nRelatório Trimestral Comercial\n---\n# Nossa Filosofia\n- O cliente é o centro absoluto de cada decisão estratégica de design\n- Entregas velozes alimentam feedback loops sadios\n- Automações reduzem desgaste de engenharia\n---\n# Crescimento Trimestral\n+145%\nReceita Mensal Recorrente (MRR)\nResultados verificados com a equipe contábil interna auditada de ponta a ponta.\n---\n# Visão do Setor\n"A melhor automação é aquela que substitui tarefas exaustivas por scripts limpos e deterministas."\n— Engenharia de Operações, Diretor`);
     showToast('Modelo de exemplo inserido na área de importação.');
   };
+
+  if (isAppLoading) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center gap-6"
+        >
+          <img src="https://i.ibb.co/C32GVNqh/logo.webp" alt="WA Fort Logo" className="h-24 object-contain drop-shadow-lg" />
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin shadow-sm"></div>
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 font-mono tracking-widest uppercase animate-pulse">Carregando sistema...</p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className={`h-screen w-full flex flex-col overflow-hidden font-sans antialiased selection:bg-blue-600 selection:text-white transition-colors duration-300 ${appTheme === 'dark' ? 'dark bg-slate-950 text-slate-100' : 'bg-[#f8fafc] text-slate-800'}`}>
