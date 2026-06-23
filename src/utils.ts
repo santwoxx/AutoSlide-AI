@@ -106,32 +106,29 @@ export function parseDocumentToSlides(text: string): SlideItem[] {
 
 /**
  * WA Fort POP specialized parser
- * Generates perfectly laid out slides from raw text POP documents
+ * Generates one perfectly laid out slide per POP document, preserving exact text structure.
  */
 export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:16'): SlideItem[] {
   if (!text.trim()) return [];
 
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  // Split by "---" if user provides multiple POPs
+  const popBlocks = text.split(/---\s*\n|---\s*$/);
   const slides: SlideItem[] = [];
   
-  // Aspect ratio baseline limits
-  const maxY = aspectRatio === '16:9' ? 82 : 86;
   const paddingX = aspectRatio === '16:9' ? 6 : 8;
-  const titleFontSize = aspectRatio === '16:9' ? 32 : 36;
-  const bodyFontSize = aspectRatio === '16:9' ? 18 : 22;
   const logoWidth = aspectRatio === '16:9' ? 12 : 20;
   const logoHeight = aspectRatio === '16:9' ? 12 : 12;
 
-  let currentElements: SlideElement[] = [];
-  let currentY = 15; // Start below the logo
-  let slideIndex = 0;
+  popBlocks.forEach((block) => {
+    if (!block.trim()) return;
 
-  const pushNewSlide = () => {
-    // Add Logo WA Fort to the slide
+    let currentElements: SlideElement[] = [];
+
+    // Add Logo WA Fort
     currentElements.push({
       id: generateId(),
       type: 'image',
-      content: 'wafort_logo', // We will inject this URL in the main app
+      content: 'wafort_logo',
       x: 100 - paddingX - logoWidth,
       y: 3,
       width: logoWidth,
@@ -139,80 +136,54 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
       imageFit: 'contain'
     });
 
+    // Body Text: Exactly as pasted
+    currentElements.push({
+      id: generateId(),
+      type: 'text',
+      content: block.trim(),
+      x: paddingX,
+      y: 15,
+      width: 100 - (paddingX * 2),
+      height: 65, // Let the container be large, text will wrap natively inside
+      fontSize: aspectRatio === '16:9' ? 18 : 22,
+      fontFamily: 'body',
+      color: 'text',
+      bold: false,
+      align: 'left'
+    });
+
+    // Signature Line
+    currentElements.push({
+      id: generateId(),
+      type: 'shape',
+      x: paddingX + 15,
+      y: 85,
+      width: 70 - (paddingX * 2),
+      height: 0.5,
+      color: 'accent'
+    });
+
+    currentElements.push({
+      id: generateId(),
+      type: 'text',
+      content: 'Assinatura do Responsável',
+      x: paddingX + 15,
+      y: 87,
+      width: 70 - (paddingX * 2),
+      height: 5,
+      fontSize: 14,
+      fontFamily: 'body',
+      color: 'text',
+      bold: true,
+      align: 'center'
+    });
+
     slides.push({
       id: 'pop-' + generateId(),
       elements: currentElements,
       backgroundColor: '#ffffff'
     });
-    currentElements = [];
-    currentY = 15;
-    slideIndex++;
-  };
-
-  lines.forEach((line) => {
-    const isHeading = line.toUpperCase() === line && line.length < 50;
-    const isMainTitle = slideIndex === 0 && currentY === 15;
-
-    let textHeight = isHeading ? 7 : 8;
-    // Estimate text height based on length (very rough) - increased multiplier
-    const charsPerLine = aspectRatio === '16:9' ? 80 : 45;
-    if (line.length > charsPerLine) {
-      textHeight += Math.ceil((line.length - charsPerLine) / charsPerLine) * (isHeading ? 6 : 5);
-    }
-
-    if (currentY + textHeight > maxY) {
-      pushNewSlide();
-    }
-
-    currentElements.push({
-      id: generateId(),
-      type: 'text',
-      content: line,
-      x: paddingX,
-      y: currentY,
-      width: 100 - (paddingX * 2),
-      height: textHeight,
-      fontSize: isHeading || isMainTitle ? titleFontSize : bodyFontSize,
-      fontFamily: isHeading || isMainTitle ? 'heading' : 'body',
-      color: isHeading || isMainTitle ? 'accent' : 'text',
-      bold: isHeading || isMainTitle,
-      align: 'left'
-    });
-
-    currentY += textHeight + 1.5;
   });
-
-  // Add signature to the last slide
-  if (currentY + 20 > maxY) {
-    pushNewSlide();
-  }
-
-  currentElements.push({
-    id: generateId(),
-    type: 'shape',
-    x: paddingX + 15,
-    y: currentY + 8,
-    width: 70 - (paddingX * 2),
-    height: 0.5,
-    color: 'accent' // Golden line
-  });
-
-  currentElements.push({
-    id: generateId(),
-    type: 'text',
-    content: 'Assinatura do Responsável',
-    x: paddingX + 15,
-    y: currentY + 10,
-    width: 70 - (paddingX * 2),
-    height: 5,
-    fontSize: 14,
-    fontFamily: 'body',
-    color: 'text',
-    bold: true,
-    align: 'center'
-  });
-
-  pushNewSlide(); // push the last slide
 
   return slides;
 }
