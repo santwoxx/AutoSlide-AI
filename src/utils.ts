@@ -107,27 +107,25 @@ export function parseDocumentToSlides(text: string): SlideItem[] {
 /**
  * WA Fort POP specialized parser
  * Generates one perfectly laid out slide per POP document, preserving exact text structure.
- */
-export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:16'): SlideItem[] {
+ */export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:16'): SlideItem[] {
   if (!text.trim()) return [];
 
   const popBlocks = text.split(/---\s*\n|---\s*$/);
   const slides: SlideItem[] = [];
   
   const paddingX = aspectRatio === '16:9' ? 6 : 8;
-  const logoWidth = aspectRatio === '16:9' ? 20 : 35;
-  const logoHeight = aspectRatio === '16:9' ? 12 : 12; // Adjust logo height for the header
-  const headerHeight = aspectRatio === '16:9' ? 18 : 12;
-  const footerHeight = aspectRatio === '16:9' ? 6 : 4;
+  const logoWidth = aspectRatio === '16:9' ? 25 : 45;
+  const logoHeight = aspectRatio === '16:9' ? 18 : 16; 
+  const headerHeight = aspectRatio === '16:9' ? 22 : 18;
+  const footerHeight = aspectRatio === '16:9' ? 6 : 5;
 
   popBlocks.forEach((block) => {
     if (!block.trim()) return;
 
-    // Split text into lines, keeping empty lines as separators
     const lines = block.trim().split(/\n/);
     let currentChunk = '';
     const chunks: string[] = [];
-    const MAX_CHARS_PER_SLIDE = aspectRatio === '16:9' ? 550 : 750; // Reduced slightly to account for headers/footers
+    const MAX_CHARS_PER_SLIDE = aspectRatio === '16:9' ? 500 : 700;
 
     lines.forEach((line) => {
       if (currentChunk.length + line.length > MAX_CHARS_PER_SLIDE && currentChunk.trim().length > 0) {
@@ -142,7 +140,7 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
     chunks.forEach((chunk, index) => {
       let currentElements: SlideElement[] = [];
 
-      // 1. Top Blue Bar
+      // 1. Top Vibrant Blue Bar
       currentElements.push({
         id: generateId(),
         type: 'shape',
@@ -150,7 +148,7 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
         y: 0,
         width: 100,
         height: headerHeight,
-        color: '#0f172a' // Very dark blue
+        color: '#1d4ed8' // Vibrant Royal Blue
       });
 
       // 2. Gold Line Under Header
@@ -160,7 +158,7 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
         x: 0,
         y: headerHeight,
         width: 100,
-        height: 0.8,
+        height: 1.5,
         color: '#fbbf24' // Gold
       });
 
@@ -185,7 +183,7 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
         y: (headerHeight / 2) - (aspectRatio === '16:9' ? 3 : 2),
         width: 60,
         height: 10,
-        fontSize: aspectRatio === '16:9' ? 18 : 22,
+        fontSize: aspectRatio === '16:9' ? 20 : 26,
         fontFamily: 'heading',
         color: '#ffffff',
         bold: true,
@@ -196,7 +194,7 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
       const textContent = chunk.trim();
       const charCount = textContent.length;
       
-      let baseSize = aspectRatio === '16:9' ? 20 : 24;
+      let baseSize = aspectRatio === '16:9' ? 22 : 28;
       if (charCount > 300) baseSize -= 2;
       if (charCount > 500) baseSize -= 4;
       if (charCount > 700) baseSize -= 6;
@@ -206,12 +204,12 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
         type: 'text',
         content: textContent,
         x: paddingX,
-        y: headerHeight + 5,
+        y: headerHeight + 6,
         width: 100 - (paddingX * 2),
-        height: 100 - headerHeight - footerHeight - 10, 
+        height: 100 - headerHeight - footerHeight - 12, 
         fontSize: baseSize,
         fontFamily: 'body',
-        color: '#1e293b', // Slate 800 for better readability
+        color: '#0f172a', // Very dark blue for text (almost black)
         bold: false,
         align: 'left'
       });
@@ -221,9 +219,9 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
         id: generateId(),
         type: 'shape',
         x: 0,
-        y: 100 - footerHeight - 0.8,
+        y: 100 - footerHeight - 1.5,
         width: 100,
-        height: 0.8,
+        height: 1.5,
         color: '#fbbf24'
       });
 
@@ -235,7 +233,7 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
         y: 100 - footerHeight,
         width: 100,
         height: footerHeight,
-        color: '#0f172a'
+        color: '#1d4ed8'
       });
 
       // 8. Pagination Text in Footer
@@ -244,13 +242,13 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
         type: 'text',
         content: `Página ${index + 1} de ${chunks.length}`,
         x: paddingX,
-        y: 100 - footerHeight + (aspectRatio === '16:9' ? 1 : 0.5),
+        y: 100 - footerHeight + (aspectRatio === '16:9' ? 1.5 : 1),
         width: 50,
         height: 5,
-        fontSize: aspectRatio === '16:9' ? 12 : 16,
+        fontSize: aspectRatio === '16:9' ? 14 : 18,
         fontFamily: 'body',
-        color: '#cbd5e1',
-        bold: false,
+        color: '#ffffff',
+        bold: true,
         align: 'left'
       });
 
@@ -259,24 +257,24 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
         currentElements.push({
           id: generateId(),
           type: 'shape',
-          x: 100 - paddingX - 35,
-          y: 100 - footerHeight - 8,
-          width: 35,
+          x: 100 - paddingX - 40,
+          y: 100 - footerHeight - 10,
+          width: 40,
           height: 0.5,
-          color: '#0f172a'
+          color: '#1d4ed8'
         });
 
         currentElements.push({
           id: generateId(),
           type: 'text',
           content: 'Assinatura do Responsável',
-          x: 100 - paddingX - 35,
-          y: 100 - footerHeight - 7,
-          width: 35,
+          x: 100 - paddingX - 40,
+          y: 100 - footerHeight - 8.5,
+          width: 40,
           height: 5,
-          fontSize: aspectRatio === '16:9' ? 12 : 14,
+          fontSize: aspectRatio === '16:9' ? 14 : 18,
           fontFamily: 'body',
-          color: '#0f172a',
+          color: '#1d4ed8',
           bold: true,
           align: 'center'
         });
@@ -285,7 +283,7 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
       slides.push({
         id: 'pop-' + generateId(),
         elements: currentElements,
-        backgroundColor: '#f8fafc' // Slightly off-white/slate-50 background
+        backgroundColor: '#ffffff' // Pure white background
       });
     });
   });
