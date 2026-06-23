@@ -36,7 +36,6 @@ import {
   Moon
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Rnd } from 'react-rnd';
 import { SlideItem, UploadedImage, ThemeId, TransitionType } from './types';
 import { THEMES } from './themes';
 import { INITIAL_SLIDES } from './initialData';
@@ -62,7 +61,6 @@ export default function App() {
   const [selectedThemeId, setSelectedThemeId] = useState<ThemeId>('royal_corporate');
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [activeTab, setActiveTab] = useState<'slides' | 'editor' | 'batch' | 'images' | 'theme'>('slides');
-  const [isCanvaMode, setIsCanvaMode] = useState(true);
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
   const [appTheme, setAppTheme] = useState<'light' | 'dark'>(() => {
     try {
@@ -1529,19 +1527,6 @@ export default function App() {
                 )}
                 <span className="hidden xs:inline sm:inline">{isFullscreen ? 'Sair Tela Cheia' : 'Tela Cheia'}</span>
               </button>
-
-              <button
-                onClick={() => setIsCanvaMode(!isCanvaMode)}
-                className={`p-1.5 rounded-lg border flex items-center space-x-1.5 transition duration-150 text-[11px] font-bold cursor-pointer ${
-                  isCanvaMode
-                    ? 'bg-amber-100 border-amber-300 text-amber-900 hover:bg-amber-200 shadow-inner'
-                    : 'bg-slate-50 border-slate-200 text-slate-705 hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'
-                }`}
-                title="Ativar/Desativar arrastar e redimensionar (Modo Canva)"
-              >
-                <div className={`w-2 h-2 rounded-full ${isCanvaMode ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
-                <span className="hidden xs:inline sm:inline">{isCanvaMode ? 'Modo Canva ON' : 'Modo Canva OFF'}</span>
-              </button>
             </div>
  
             {/* Transition variant selections */}
@@ -1699,46 +1684,25 @@ export default function App() {
                       {activeSlide.elements.map(el => {
                         const isEditing = editingElementId === el.id;
                         return (
-                          <Rnd
+                          <div
                             key={el.id}
-                            bounds="parent"
-                            minWidth={50}
-                            minHeight={30}
-                            disableDragging={!isCanvaMode || isEditing}
-                            enableResizing={isCanvaMode && !isEditing}
-                            position={{ x: (el.x / 100) * canvasSize.w, y: (el.y / 100) * canvasSize.h }}
-                            size={{ width: `${el.width}%`, height: `${el.height}%` }}
-                            onDragStop={(e, d) => {
-                              const newX = Math.max(0, (d.x / canvasSize.w) * 100);
-                              const newY = Math.max(0, (d.y / canvasSize.h) * 100);
-                              updateElement(el.id, { x: newX, y: newY });
-                            }}
-                            onResizeStop={(e, direction, ref, delta, position) => {
-                              const pxW = parseFloat(ref.style.width);
-                              const pxH = parseFloat(ref.style.height);
-                              const newW = Math.max(2, (pxW / canvasSize.w) * 100);
-                              const newH = Math.max(2, (pxH / canvasSize.h) * 100);
-                              const newX = Math.max(0, (position.x / canvasSize.w) * 100);
-                              const newY = Math.max(0, (position.y / canvasSize.h) * 100);
-                              updateElement(el.id, {
-                                width: newW,
-                                height: newH,
-                                x: newX,
-                                y: newY
-                              });
-                            }}
                             onClick={(e: React.MouseEvent) => {
-                              if (!isCanvaMode) return;
                               e.stopPropagation();
                               setSelectedElementId(el.id);
                             }}
                             onDoubleClick={(e) => {
-                              if (!isCanvaMode || el.type !== 'text') return;
+                              if (el.type !== 'text') return;
                               e.stopPropagation();
                               setEditingElementId(el.id);
                             }}
-                            className={`group border ${isCanvaMode && selectedElementId === el.id ? 'border-amber-400 shadow-md ring-2 ring-amber-400/50 z-[100]' : 'border-transparent hover:border-blue-400 hover:border-dashed z-10'} transition-colors duration-100 flex items-center justify-center`}
-                            style={{ position: 'absolute' }}
+                            className={`group border ${selectedElementId === el.id ? 'border-amber-400 shadow-md ring-2 ring-amber-400/50 z-[100]' : 'border-transparent hover:border-blue-400 hover:border-dashed z-10'} transition-colors duration-100 flex items-center justify-center`}
+                            style={{ 
+                              position: 'absolute',
+                              left: `${el.x}%`,
+                              top: `${el.y}%`,
+                              width: `${el.width}%`,
+                              height: `${el.height}%`
+                            }}
                           >
                           <div className={`w-full h-full flex ${el.type === 'text' ? 'flex-col' : 'items-center justify-center'}`}>
                             {el.type === 'text' && (
@@ -1780,7 +1744,7 @@ export default function App() {
                                   </p>
                                 )}
                                 
-                                {isCanvaMode && selectedElementId === el.id && editingElementId !== el.id && (
+                                {selectedElementId === el.id && editingElementId !== el.id && (
                                   <button
                                     onPointerDown={(e) => {
                                       e.stopPropagation();
@@ -1815,7 +1779,7 @@ export default function App() {
                               <div className={`w-full h-full rounded-xl opacity-80 ${el.color === 'card' ? 'bg-slate-200/50' : 'bg-blue-500'}`} />
                             )}
                           </div>
-                        </Rnd>
+                        </div>
                       );
                       })}
                     </div>
