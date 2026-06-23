@@ -815,6 +815,14 @@ Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`
             Motor PPTX Conectado
           </div>
           <button
+            onClick={toggleFullscreen}
+            title="Apresentar em Tela Cheia no próprio navegador"
+            className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs sm:text-sm font-bold py-2 px-3 sm:px-4 shadow-md shadow-emerald-950/20 rounded-lg border border-emerald-500 hover:scale-[1.01] transition-all duration-150 cursor-pointer shrink-0"
+          >
+            <Play className="w-3.5 h-3.5 text-white shrink-0" />
+            <span className="hidden sm:inline">Apresentar</span>
+          </button>
+          <button
             onClick={downloadPptxFile}
             title="Download PowerPoint: Exporta a apresentação pronta para abrir e editar no Microsoft PowerPoint."
             className="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs sm:text-sm font-bold py-2 px-3 sm:px-4 shadow-md shadow-blue-950/20 rounded-lg border border-blue-500 hover:scale-[1.01] transition-all duration-150 cursor-pointer shrink-0"

@@ -27,7 +27,7 @@ export async function exportToPowerpoint(
 
   // Set layout based on aspect ratio
   if (aspectRatio === '16:9') {
-    pptx.layout = 'LAYOUT_16X9';
+    pptx.layout = 'LAYOUT_16x9';
   } else {
     pptx.defineLayout({ name: 'PORTRAIT_9X16', width: 5.625, height: 10 });
     pptx.layout = 'PORTRAIT_9X16';
