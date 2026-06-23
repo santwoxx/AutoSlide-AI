@@ -116,8 +116,8 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
   const slides: SlideItem[] = [];
   
   const paddingX = aspectRatio === '16:9' ? 6 : 8;
-  const logoWidth = aspectRatio === '16:9' ? 12 : 20;
-  const logoHeight = aspectRatio === '16:9' ? 12 : 12;
+  const logoWidth = aspectRatio === '16:9' ? 20 : 35;
+  const logoHeight = aspectRatio === '16:9' ? 18 : 18;
 
   popBlocks.forEach((block) => {
     if (!block.trim()) return;
