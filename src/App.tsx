@@ -1419,6 +1419,15 @@ export default function App() {
             )}
 
           </div>
+
+          {/* DIREITOS AUTORAIS / LOGO */}
+          <div className="p-4 border-t border-slate-200 bg-slate-50 dark:bg-slate-900/60 dark:border-slate-800 flex flex-col items-center justify-center gap-2 shrink-0">
+            <img src="https://i.ibb.co/C32GVNqh/logo.webp" alt="WA Fort Logo" className="h-8 object-contain drop-shadow-sm" />
+            <p className="text-[10px] text-slate-500 font-mono font-bold text-center dark:text-slate-400">
+              Desenvolvido por Natan Marinho<br />
+              para WA Fort &copy; {new Date().getFullYear()}
+            </p>
+          </div>
         </aside>
 
         {/* Right Side: Visual Slide Showcase aspect ratio & Code Editor script panel */}
