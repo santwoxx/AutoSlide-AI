@@ -64,23 +64,6 @@ export default function App() {
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [draggingNode, setDraggingNode] = useState<{ id: string, startX: number, startY: number, startElX: number, startElY: number } | null>(null);
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
-  const [appTheme, setAppTheme] = useState<'light' | 'dark'>(() => {
-    try {
-      const saved = localStorage.getItem('autoslide_app_theme');
-      return (saved === 'dark' || saved === 'light') ? saved : 'light';
-    } catch {
-      return 'light';
-    }
-  });
-
-  const toggleAppTheme = () => {
-    const nextTheme = appTheme === 'light' ? 'dark' : 'light';
-    setAppTheme(nextTheme);
-    try {
-      localStorage.setItem('autoslide_app_theme', nextTheme);
-    } catch {}
-    addLog(`Tema da interface alterado para: ${nextTheme === 'light' ? 'Claro' : 'Escuro'}`);
-  };
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   // Active theme configuration helper
@@ -694,7 +677,7 @@ export default function App() {
 
   if (isAppLoading) {
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-50 transition-colors duration-300">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -704,7 +687,7 @@ export default function App() {
           <img src="https://i.ibb.co/C32GVNqh/logo.webp" alt="WA Fort Logo" className="h-24 object-contain drop-shadow-lg" />
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin shadow-sm"></div>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 font-mono tracking-widest uppercase animate-pulse">Carregando sistema...</p>
+            <p className="text-xs font-bold text-slate-500 font-mono tracking-widest uppercase animate-pulse">Carregando sistema...</p>
           </div>
         </motion.div>
       </div>
@@ -712,7 +695,7 @@ export default function App() {
   }
 
   return (
-    <div className={`h-screen w-full flex flex-col overflow-hidden font-sans antialiased selection:bg-blue-600 selection:text-white transition-colors duration-300 ${appTheme === 'dark' ? 'dark bg-slate-950 text-slate-100' : 'bg-[#f8fafc] text-slate-800'}`}>
+    <div className="h-screen w-full flex flex-col overflow-hidden font-sans antialiased selection:bg-blue-600 selection:text-white bg-slate-50 text-slate-900">
       {/* Toast Notification banner */}
       <AnimatePresence>
         {toastMessage && (
@@ -749,17 +732,6 @@ export default function App() {
             Motor PPTX Conectado
           </div>
           <button
-            onClick={toggleAppTheme}
-            className="flex items-center justify-center bg-white/10 hover:bg-white/15 active:bg-white/20 text-blue-100 hover:text-white p-2 rounded-lg border border-white/20 transition duration-150 cursor-pointer shadow-sm shrink-0"
-            title={appTheme === 'light' ? 'Mudar para Tema Escuro' : 'Mudar para Tema Claro'}
-          >
-            {appTheme === 'light' ? (
-              <Moon className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-            ) : (
-              <Sun className="w-3.5 h-3.5 text-amber-455 fill-amber-455" />
-            )}
-          </button>
-          <button
             onClick={downloadPptxFile}
             title="Download PowerPoint: Exporta a apresentação pronta para abrir e editar no Microsoft PowerPoint."
             className="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs sm:text-sm font-bold py-2 px-3 sm:px-4 shadow-md shadow-blue-950/20 rounded-lg border border-blue-500 hover:scale-[1.01] transition-all duration-150 cursor-pointer shrink-0"
@@ -784,7 +756,7 @@ export default function App() {
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
         
         {/* Mobile Sub-Header Toggle Tab */}
-        <div className="md:hidden flex bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-2.5 shrink-0 justify-around select-none">
+        <div className="md:hidden flex bg-slate-100 border-b border-slate-200 p-2.5 shrink-0 justify-around select-none">
           <button
             onClick={() => {
               setMobileView('editor');
@@ -793,7 +765,7 @@ export default function App() {
             className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
               mobileView === 'editor'
                 ? 'bg-blue-600 text-white shadow-md'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/30'
+                : 'text-slate-600 hover:bg-slate-200/50:bg-slate-800/30'
             }`}
           >
             <Edit3 className="w-3.5 h-3.5" />
@@ -807,7 +779,7 @@ export default function App() {
             className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
               mobileView === 'preview'
                 ? 'bg-blue-600 text-white shadow-md'
-                : 'text-slate-650 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/30'
+                : 'text-slate-650 hover:bg-slate-200/50:bg-slate-800/30'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -816,16 +788,16 @@ export default function App() {
         </div>
 
         {/* Left Side: Sidebar Control & Setup Panels */}
-        <aside className={`w-full md:w-96 bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-hidden shadow-sm dark:bg-slate-900 dark:border-slate-800 ${mobileView === 'editor' ? 'flex' : 'hidden md:flex'}`}>
+        <aside className={`w-full md:w-96 bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-hidden shadow-sm ${mobileView === 'editor' ? 'flex' : 'hidden md:flex'}`}>
           
           {/* Tab Navigation Menu */}
-          <div className="flex border-b border-slate-200 bg-slate-50 sticky top-0 z-10 scrollbar-none overflow-x-auto shrink-0 select-none dark:border-slate-800 dark:bg-slate-900/60">
+          <div className="flex border-b border-slate-200 bg-slate-50 sticky top-0 z-10 scrollbar-none overflow-x-auto shrink-0 select-none">
             <button
               onClick={() => setActiveTab('slides')}
               className={`flex-1 min-w-[64px] py-3.5 px-1.5 text-[11px] font-semibold flex flex-col items-center gap-1.5 transition duration-150 border-b-2 cursor-pointer relative ${
                 activeTab === 'slides'
-                  ? 'border-blue-600 text-blue-850 bg-white font-extrabold dark:border-blue-500 dark:text-blue-400 dark:bg-slate-850'
-                  : 'border-transparent text-slate-500 hover:text-blue-700 hover:bg-slate-100/70 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-slate-800/50'
+                  ? 'border-blue-600 text-blue-850 bg-white font-extrabold'
+                  : 'border-transparent text-slate-500 hover:text-blue-700 hover:bg-slate-100/70:text-blue-400:bg-slate-800/50'
               }`}
             >
               <Layers className={`w-3.5 h-3.5 ${activeTab === 'slides' ? 'text-blue-600' : 'text-slate-400'}`} />
@@ -838,8 +810,8 @@ export default function App() {
               onClick={() => setActiveTab('editor')}
               className={`flex-1 min-w-[64px] py-3.5 px-1.5 text-[11px] font-semibold flex flex-col items-center gap-1.5 transition duration-150 border-b-2 cursor-pointer relative ${
                 activeTab === 'editor'
-                  ? 'border-blue-600 text-blue-850 bg-white font-extrabold dark:border-blue-500 dark:text-blue-400 dark:bg-slate-850'
-                  : 'border-transparent text-slate-500 hover:text-blue-700 hover:bg-slate-100/70 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-slate-800/50'
+                  ? 'border-blue-600 text-blue-850 bg-white font-extrabold'
+                  : 'border-transparent text-slate-500 hover:text-blue-700 hover:bg-slate-100/70:text-blue-400:bg-slate-800/50'
               }`}
             >
               <Edit3 className={`w-3.5 h-3.5 ${activeTab === 'editor' ? 'text-blue-600' : 'text-slate-400'}`} />
@@ -852,8 +824,8 @@ export default function App() {
               onClick={() => setActiveTab('batch')}
               className={`flex-1 min-w-[64px] py-3.5 px-1.5 text-[11px] font-semibold flex flex-col items-center gap-1.5 transition duration-150 border-b-2 cursor-pointer relative ${
                 activeTab === 'batch'
-                  ? 'border-blue-600 text-blue-850 bg-white font-extrabold dark:border-blue-500 dark:text-blue-400 dark:bg-slate-850'
-                  : 'border-transparent text-slate-500 hover:text-blue-700 hover:bg-slate-100/70 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-slate-800/50'
+                  ? 'border-blue-600 text-blue-850 bg-white font-extrabold'
+                  : 'border-transparent text-slate-500 hover:text-blue-700 hover:bg-slate-100/70:text-blue-400:bg-slate-800/50'
               }`}
             >
               <FileText className={`w-3.5 h-3.5 ${activeTab === 'batch' ? 'text-blue-600' : 'text-slate-400'}`} />
@@ -866,8 +838,8 @@ export default function App() {
               onClick={() => setActiveTab('images')}
               className={`flex-1 min-w-[64px] py-3.5 px-1.5 text-[11px] font-semibold flex flex-col items-center gap-1.5 transition duration-150 border-b-2 cursor-pointer relative ${
                 activeTab === 'images'
-                  ? 'border-blue-600 text-blue-850 bg-white font-extrabold dark:border-blue-500 dark:text-blue-400 dark:bg-slate-850'
-                  : 'border-transparent text-slate-500 hover:text-blue-700 hover:bg-slate-100/70 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-slate-800/50'
+                  ? 'border-blue-600 text-blue-850 bg-white font-extrabold'
+                  : 'border-transparent text-slate-500 hover:text-blue-700 hover:bg-slate-100/70:text-blue-400:bg-slate-800/50'
               }`}
             >
               <ImageIcon className={`w-3.5 h-3.5 ${activeTab === 'images' ? 'text-blue-600' : 'text-slate-400'}`} />
@@ -880,8 +852,8 @@ export default function App() {
               onClick={() => setActiveTab('theme')}
               className={`flex-1 min-w-[64px] py-3.5 px-1.5 text-[11px] font-semibold flex flex-col items-center gap-1.5 transition duration-150 border-b-2 cursor-pointer relative ${
                 activeTab === 'theme'
-                  ? 'border-blue-600 text-blue-850 bg-white font-extrabold dark:border-blue-500 dark:text-blue-400 dark:bg-slate-850'
-                  : 'border-transparent text-slate-500 hover:text-blue-700 hover:bg-slate-100/70 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-slate-800/50'
+                  ? 'border-blue-600 text-blue-850 bg-white font-extrabold'
+                  : 'border-transparent text-slate-500 hover:text-blue-700 hover:bg-slate-100/70:text-blue-400:bg-slate-800/50'
               }`}
             >
               <Palette className={`w-3.5 h-3.5 ${activeTab === 'theme' ? 'text-blue-600' : 'text-slate-400'}`} />
@@ -900,7 +872,7 @@ export default function App() {
               <div className="flex-1 flex flex-col justify-between">
                 <div className="space-y-4">
                   <div>
-                    <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2.5 block dark:text-slate-450">ADICIONAR LAYOUT</label>
+                    <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2.5 block">ADICIONAR LAYOUT</label>
                   </div>
 
                   {/* Templates grids */}
@@ -930,22 +902,22 @@ export default function App() {
                           }}
                           className={`group p-2.5 rounded-lg border transition-all duration-150 flex items-center justify-between cursor-pointer ${
                             isActive
-                              ? 'bg-blue-50/70 border-blue-500 border-l-4 border-l-amber-500 shadow-sm shadow-blue-100 ring-1 ring-blue-500/10 dark:bg-blue-950/40 dark:border-blue-600 dark:shadow-none'
-                              : 'bg-slate-50/50 border-slate-200 hover:bg-slate-50/80 hover:border-slate-300 dark:bg-slate-800/40 dark:border-slate-800 dark:hover:bg-slate-800/80 dark:hover:border-slate-700'
+                              ? 'bg-blue-50/70 border-blue-500 border-l-4 border-l-amber-500 shadow-sm shadow-blue-100 ring-1 ring-blue-500/10'
+                              : 'bg-slate-50/50 border-slate-200 hover:bg-slate-50/80 hover:border-slate-300:bg-slate-800/80:border-slate-700'
                           }`}
                         >
                           <div className="flex items-center space-x-2 overflow-hidden">
-                            <span className={`text-[10px] font-mono font-bold w-4.5 h-4.5 flex items-center justify-center rounded ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'}`}>
+                            <span className={`text-[10px] font-mono font-bold w-4.5 h-4.5 flex items-center justify-center rounded ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
                               {idx + 1}
                             </span>
                             <div className="overflow-hidden">
                               <div className="flex items-center gap-1 flex-wrap">
-                                <span className={`text-[9px] font-mono font-extrabold px-1 py-0.5 rounded border ${isActive ? 'bg-blue-105 text-blue-800 border-blue-200 dark:bg-blue-900/60 dark:text-blue-200 dark:border-blue-800' : 'bg-slate-105 text-slate-600 border-slate-200/80 dark:bg-slate-750 dark:text-slate-300 dark:border-slate-700'}`}>
+                                <span className={`text-[9px] font-mono font-extrabold px-1 py-0.5 rounded border ${isActive ? 'bg-blue-105 text-blue-800 border-blue-200' : 'bg-slate-105 text-slate-600 border-slate-200/80'}`}>
                                   {label}
                                 </span>
                                 {((s.transitionIn && s.transitionIn !== 'default') || (s.transitionOut && s.transitionOut !== 'default')) && (
                                   <span 
-                                    className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-50 text-amber-850 font-mono border border-amber-300/60 flex items-center gap-0.5 shrink-0 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30" 
+                                    className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-50 text-amber-850 font-mono border border-amber-300/60 flex items-center gap-0.5 shrink-0" 
                                     title={`Efeitos personalizados ativos (Entrada: ${s.transitionIn || 'Padrão'}, Saída: ${s.transitionOut || 'Padrão'})`}
                                   >
                                     <Zap className="w-2.5 h-2.5 fill-amber-500 text-amber-500 border-none shrink-0" />
@@ -953,7 +925,7 @@ export default function App() {
                                   </span>
                                 )}
                               </div>
-                              <p className={`text-xs font-bold mt-1 truncate ${isActive ? 'text-blue-950 dark:text-blue-200' : 'text-slate-700 dark:text-slate-300'}`}>
+                              <p className={`text-xs font-bold mt-1 truncate ${isActive ? 'text-blue-950' : 'text-slate-700'}`}>
                                 Slide com {s.elements?.length || 0} elementos
                               </p>
                             </div>
@@ -965,7 +937,7 @@ export default function App() {
                               onClick={(e) => moveSlide(idx, 'up', e)}
                               disabled={idx === 0}
                               title="Subir Ordem"
-                              className="p-1 rounded text-slate-505 hover:bg-slate-100 hover:text-blue-700 disabled:opacity-25 flex cursor-pointer dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-amber-400"
+                              className="p-1 rounded text-slate-505 hover:bg-slate-100 hover:text-blue-700 disabled:opacity-25 flex cursor-pointer:bg-slate-800:text-amber-400"
                             >
                               <ChevronLeft className="w-3.5 h-3.5 rotate-90" />
                             </button>
@@ -973,21 +945,21 @@ export default function App() {
                               onClick={(e) => moveSlide(idx, 'down', e)}
                               disabled={idx === slides.length - 1}
                               title="Descer Ordem"
-                              className="p-1 rounded text-slate-550 hover:bg-slate-100 hover:text-blue-700 disabled:opacity-25 flex cursor-pointer dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-amber-400"
+                              className="p-1 rounded text-slate-550 hover:bg-slate-100 hover:text-blue-700 disabled:opacity-25 flex cursor-pointer:bg-slate-800:text-amber-400"
                             >
                               <ChevronRight className="w-3.5 h-3.5 rotate-90" />
                             </button>
                             <button
                               onClick={(e) => duplicateSlide(s, e)}
                               title="Duplicar Slide"
-                              className="p-1 text-slate-550 hover:text-blue-700 hover:bg-blue-50 rounded flex cursor-pointer dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-blue-950/50"
+                              className="p-1 text-slate-550 hover:text-blue-700 hover:bg-blue-50 rounded flex cursor-pointer:text-blue-400:bg-blue-950/50"
                             >
                               <Copy className="w-3 h-3" />
                             </button>
                             <button
                               onClick={(e) => deleteSlide(s.id, e)}
                               title="Deletar Slide"
-                              className="p-1 text-slate-455 hover:text-red-650 hover:bg-red-50 rounded flex cursor-pointer dark:text-slate-400 dark:hover:text-red-400 dark:hover:bg-red-950/40"
+                              className="p-1 text-slate-455 hover:text-red-650 hover:bg-red-50 rounded flex cursor-pointer:text-red-400:bg-red-950/40"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>
@@ -1000,43 +972,43 @@ export default function App() {
                 </div>
 
                 {/* Automation Global Settings from mockup */}
-                <div className="border-t border-slate-200 pt-3 mt-1.5 shrink-0 dark:border-slate-800">
-                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-extrabold mb-2.5 block font-mono dark:text-slate-400">Configurações do Script</label>
+                <div className="border-t border-slate-200 pt-3 mt-1.5 shrink-0">
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-extrabold mb-2.5 block font-mono">Configurações do Script</label>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-650 font-medium dark:text-slate-300">Ajustar mídias no slide</span>
+                      <span className="text-xs text-slate-650 font-medium">Ajustar mídias no slide</span>
                       <button 
                         onClick={() => {
                           setFitImages(!fitImages);
                           addLog(`Configuração alterada: fitImagesToSlide = ${!fitImages}`);
                         }}
-                        className={`w-8 h-4 rounded-full relative transition-colors duration-200 cursor-pointer ${fitImages ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+                        className={`w-8 h-4 rounded-full relative transition-colors duration-200 cursor-pointer ${fitImages ? 'bg-blue-600' : 'bg-slate-300'}`}
                       >
                         <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all duration-200 ${fitImages ? 'right-0.5' : 'left-0.5'}`} />
                       </button>
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-650 font-medium dark:text-slate-300">Extrair metadados EXIF</span>
+                      <span className="text-xs text-slate-650 font-medium">Extrair metadados EXIF</span>
                       <button 
                         onClick={() => {
                           setExtractExif(!extractExif);
                           addLog(`Configuração alterada: extractExifMetadata = ${!extractExif}`);
                         }}
-                        className={`w-8 h-4 rounded-full relative transition-colors duration-200 cursor-pointer ${extractExif ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+                        className={`w-8 h-4 rounded-full relative transition-colors duration-200 cursor-pointer ${extractExif ? 'bg-blue-600' : 'bg-slate-300'}`}
                       >
                         <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all duration-200 ${extractExif ? 'right-0.5' : 'left-0.5'}`} />
                       </button>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-650 font-medium dark:text-slate-300">Notas de Apresentador</span>
+                      <span className="text-xs text-slate-650 font-medium">Notas de Apresentador</span>
                       <button 
                         onClick={() => {
                           setSpeakerNotes(!speakerNotes);
                           addLog(`Configuração alterada: generateSpeakerNotes = ${!speakerNotes}`);
                         }}
-                        className={`w-8 h-4 rounded-full relative transition-colors duration-200 cursor-pointer ${speakerNotes ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+                        className={`w-8 h-4 rounded-full relative transition-colors duration-200 cursor-pointer ${speakerNotes ? 'bg-blue-600' : 'bg-slate-300'}`}
                       >
                         <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all duration-205 ${speakerNotes ? 'right-0.5' : 'left-0.5'}`} />
                       </button>
@@ -1044,11 +1016,20 @@ export default function App() {
                   </div>
 
                   {/* Dynamic compilation brief from mockup */}
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80 mt-3.5 shadow-sm dark:bg-slate-850 dark:border-slate-800">
-                    <p className="text-[9px] text-slate-500 mb-0.5 uppercase tracking-widest font-extrabold font-mono dark:text-slate-400">ESTADO COMPILADOR</p>
-                    <div className="flex justify-between items-baseline">
-                      <p className="text-[11px] font-bold text-slate-750 font-mono dark:text-slate-300">COMPILADOR AUTOMÁTICO</p>
-                      <p className="text-sm font-mono text-blue-600 dark:text-blue-400 font-extrabold">{slides.length} SLIDES</p>
+                  <div className="p-4 bg-gradient-to-br from-blue-900 to-indigo-950 rounded-xl border border-blue-800 mt-4 shadow-md shadow-blue-900/20">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                      <p className="text-[10px] text-blue-200 uppercase tracking-widest font-extrabold font-mono">Status do Compilador</p>
+                    </div>
+                    <div className="flex justify-between items-end mt-2">
+                      <div>
+                        <p className="text-[13px] font-black text-white tracking-tight">MOTOR ATIVO</p>
+                        <p className="text-[10px] text-blue-300 font-mono mt-0.5">Sincronização em tempo real</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-black text-amber-400 font-mono leading-none">{slides.length}</p>
+                        <p className="text-[9px] text-blue-200 font-bold tracking-widest mt-1 uppercase">Slides Prontos</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1469,9 +1450,9 @@ export default function App() {
           </div>
 
           {/* DIREITOS AUTORAIS / LOGO */}
-          <div className="p-4 border-t border-slate-200 bg-slate-50 dark:bg-slate-900/60 dark:border-slate-800 flex flex-col items-center justify-center gap-2 shrink-0">
+          <div className="p-4 border-t border-slate-200 bg-slate-50 flex flex-col items-center justify-center gap-2 shrink-0">
             <img src="https://i.ibb.co/C32GVNqh/logo.webp" alt="WA Fort Logo" className="h-8 object-contain drop-shadow-sm" />
-            <p className="text-[10px] text-slate-500 font-mono font-bold text-center dark:text-slate-400">
+            <p className="text-[10px] text-slate-500 font-mono font-bold text-center">
               Desenvolvido por Natan Marinho<br />
               para WA Fort &copy; {new Date().getFullYear()}
             </p>
@@ -1482,24 +1463,24 @@ export default function App() {
         <section className={`flex-1 bg-slate-950 flex flex-col overflow-y-auto ${mobileView === 'preview' ? 'flex' : 'hidden md:flex'}`}>
           
           {/* Top Slideshow Control bar */}
-          <div className="bg-white dark:bg-slate-900 dark:border-slate-800 border-b border-slate-200 px-4 md:px-6 py-3 md:py-0 md:h-14 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shrink-0 sticky top-0 z-10 shadow-sm">
+          <div className="bg-white border-b border-slate-200 px-4 md:px-6 py-3 md:py-0 md:h-14 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shrink-0 sticky top-0 z-10 shadow-sm">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <button
                 onClick={triggerPrevSlide}
-                className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-750 disabled:opacity-25 border border-slate-200 cursor-pointer transitionDuration-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-705"
+                className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-750 disabled:opacity-25 border border-slate-200 cursor-pointer transitionDuration-100:bg-slate-705"
                 title="Slide Anterior"
               >
-                <ChevronLeft className="w-4 h-4 shrink-0 text-slate-600 dark:text-slate-405" />
+                <ChevronLeft className="w-4 h-4 shrink-0 text-slate-600" />
               </button>
-              <span className="text-[11px] font-extrabold text-blue-900 font-mono bg-blue-50/70 px-2.5 py-1.5 rounded-lg border border-blue-200 shrink-0 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/80">
+              <span className="text-[11px] font-extrabold text-blue-900 font-mono bg-blue-50/70 px-2.5 py-1.5 rounded-lg border border-blue-200 shrink-0">
                 SLIDE {activeSlideIndex + 1} / {slides.length}
               </span>
               <button
                 onClick={triggerNextSlide}
-                className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-750 disabled:opacity-25 border border-slate-200 cursor-pointer transitionDuration-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-705"
+                className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-750 disabled:opacity-25 border border-slate-200 cursor-pointer transitionDuration-100:bg-slate-705"
                 title="Próximo Slide"
               >
-                <ChevronRight className="w-4 h-4 shrink-0 text-slate-600 dark:text-slate-405" />
+                <ChevronRight className="w-4 h-4 shrink-0 text-slate-600" />
               </button>
  
               {/* Autoplay layout toggle */}
@@ -1507,12 +1488,12 @@ export default function App() {
                 onClick={() => setIsPlaying(!isPlaying)}
                 className={`p-1.5 rounded-lg border flex items-center space-x-1.5 transition duration-150 text-[11px] font-bold cursor-pointer ${
                   isPlaying
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100/50 dark:bg-emerald-950/30'
-                    : 'bg-slate-50 border-slate-200 text-slate-705 hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-705'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100/50'
+                    : 'bg-slate-50 border-slate-200 text-slate-705 hover:bg-slate-100:bg-slate-705'
                 }`}
                 title="Toggle Apresentação de Slides Automática"
               >
-                <Play className={`w-3.5 h-3.5 ${isPlaying ? 'fill-emerald-600 text-emerald-600 border-none dark:fill-emerald-400 dark:text-emerald-400' : 'text-slate-600'}`} />
+                <Play className={`w-3.5 h-3.5 ${isPlaying ? 'fill-emerald-600 text-emerald-600 border-none' : 'text-slate-600'}`} />
                 <span className="hidden xs:inline sm:inline">{isPlaying ? 'Autoplay Ativo' : 'Autoplay'}</span>
               </button>
  
@@ -1520,7 +1501,7 @@ export default function App() {
                 <select
                   value={autoplaySpeed}
                   onChange={(e) => setAutoplaySpeed(Number(e.target.value))}
-                  className="bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-350 border border-slate-200 text-slate-705 text-[11px] px-2 py-1.5 rounded-lg focus:outline-none cursor-pointer font-bold shadow-sm"
+                  className="bg-slate-50 border border-slate-200 text-slate-705 text-[11px] px-2 py-1.5 rounded-lg focus:outline-none cursor-pointer font-bold shadow-sm"
                   title="Velocidade de Transição"
                 >
                   <option value={2}>2s</option>
@@ -1536,7 +1517,7 @@ export default function App() {
                 className={`p-1.5 rounded-lg border flex items-center space-x-1.5 transition duration-150 text-[11px] font-bold cursor-pointer ${
                   isFullscreen
                     ? 'bg-blue-50 border-blue-300 text-blue-800 hover:bg-blue-100'
-                    : 'bg-slate-50 border-slate-200 text-slate-705 hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'
+                    : 'bg-slate-50 border-slate-200 text-slate-705 hover:bg-slate-100'
                 }`}
                 title="Tela Cheia (Esc para Sair)"
               >
@@ -1556,7 +1537,7 @@ export default function App() {
                 <select
                   value={transition}
                   onChange={(e) => setTransition(e.target.value as TransitionType)}
-                  className="bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border border-slate-200 text-slate-800 text-[11px] px-2.5 py-1.5 rounded-lg focus:outline-none cursor-pointer font-extrabold shadow-sm"
+                  className="bg-slate-50 border border-slate-200 text-slate-800 text-[11px] px-2.5 py-1.5 rounded-lg focus:outline-none cursor-pointer font-extrabold shadow-sm"
                   title="Efeito de transição de slides em tempo real"
                 >
                   <option value="slide">Deslizar (Swipe)</option>
@@ -1579,10 +1560,10 @@ export default function App() {
                     setGlobalTransitionDuration(val);
                     addLog(`Duração da transição global alterada para: ${val}s`);
                   }}
-                  className="w-16 sm:w-20 accent-blue-600 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-pointer"
+                  className="w-16 sm:w-20 accent-blue-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
                   title="Velocidade da animação em segundos"
                 />
-                <span className="text-[10px] font-mono font-extrabold text-blue-900 bg-blue-50/70 border border-blue-200 p-1 rounded min-w-[32px] text-center shadow-xs dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900">
+                <span className="text-[10px] font-mono font-extrabold text-blue-900 bg-blue-50/70 border border-blue-200 p-1 rounded min-w-[32px] text-center shadow-xs">
                   {globalTransitionDuration}s
                 </span>
               </div>
