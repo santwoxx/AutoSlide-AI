@@ -1808,29 +1808,33 @@ export default function App() {
                                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                     </button>
                                     
-                                    {/* Resize Handles */}
+                                    {/* Right Edge Handle */}
                                     <div 
-                                      className="absolute right-0 bottom-0 w-3 h-3 bg-white border-2 border-amber-500 rounded-full cursor-se-resize translate-x-1/2 translate-y-1/2 z-50 shadow-sm hover:scale-125 transition-transform"
-                                      onPointerDown={(e) => {
-                                        e.stopPropagation();
-                                        (e.target as HTMLElement).setPointerCapture(e.pointerId);
-                                        setResizingNode({ id: el.id, startX: e.clientX, startY: e.clientY, startWidth: el.width, startHeight: el.height, direction: 'br' });
-                                      }}
-                                    />
-                                    <div 
-                                      className="absolute right-0 top-1/2 w-3 h-3 bg-white border-2 border-amber-500 rounded-full cursor-e-resize translate-x-1/2 -translate-y-1/2 z-50 shadow-sm hover:scale-125 transition-transform"
+                                      className="absolute -right-1.5 top-0 w-4 h-full cursor-e-resize z-50 hover:bg-amber-400/40 transition-colors rounded-r-md"
                                       onPointerDown={(e) => {
                                         e.stopPropagation();
                                         (e.target as HTMLElement).setPointerCapture(e.pointerId);
                                         setResizingNode({ id: el.id, startX: e.clientX, startY: e.clientY, startWidth: el.width, startHeight: el.height, direction: 'r' });
                                       }}
                                     />
+                                    
+                                    {/* Bottom Edge Handle */}
                                     <div 
-                                      className="absolute bottom-0 left-1/2 w-3 h-3 bg-white border-2 border-amber-500 rounded-full cursor-s-resize -translate-x-1/2 translate-y-1/2 z-50 shadow-sm hover:scale-125 transition-transform"
+                                      className="absolute left-0 -bottom-1.5 w-full h-4 cursor-s-resize z-50 hover:bg-amber-400/40 transition-colors rounded-b-md"
                                       onPointerDown={(e) => {
                                         e.stopPropagation();
                                         (e.target as HTMLElement).setPointerCapture(e.pointerId);
                                         setResizingNode({ id: el.id, startX: e.clientX, startY: e.clientY, startWidth: el.width, startHeight: el.height, direction: 'b' });
+                                      }}
+                                    />
+
+                                    {/* Bottom Right Corner Handle */}
+                                    <div 
+                                      className="absolute -right-2 -bottom-2 w-5 h-5 bg-white border-2 border-amber-500 rounded-full cursor-se-resize z-50 shadow-md hover:scale-125 transition-transform"
+                                      onPointerDown={(e) => {
+                                        e.stopPropagation();
+                                        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                                        setResizingNode({ id: el.id, startX: e.clientX, startY: e.clientY, startWidth: el.width, startHeight: el.height, direction: 'br' });
                                       }}
                                     />
                                   </>
