@@ -122,17 +122,19 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
   popBlocks.forEach((block) => {
     if (!block.trim()) return;
 
-    const paragraphs = block.trim().split(/\n\s*\n/);
+    // Split text into lines, keeping empty lines as separators
+    const lines = block.trim().split(/\n/);
     let currentChunk = '';
     const chunks: string[] = [];
-    const MAX_CHARS_PER_SLIDE = aspectRatio === '16:9' ? 700 : 900; 
+    const MAX_CHARS_PER_SLIDE = aspectRatio === '16:9' ? 650 : 850; 
 
-    paragraphs.forEach((p) => {
-      if (currentChunk.length + p.length > MAX_CHARS_PER_SLIDE && currentChunk.length > 0) {
-        chunks.push(currentChunk);
-        currentChunk = p;
+    lines.forEach((line) => {
+      // If adding this line exceeds the limit and we already have content, push the chunk
+      if (currentChunk.length + line.length > MAX_CHARS_PER_SLIDE && currentChunk.trim().length > 0) {
+        chunks.push(currentChunk.trim());
+        currentChunk = line;
       } else {
-        currentChunk = currentChunk ? currentChunk + '\n\n' + p : p;
+        currentChunk = currentChunk ? currentChunk + '\n' + line : line;
       }
     });
     if (currentChunk) chunks.push(currentChunk);
