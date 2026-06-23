@@ -1721,7 +1721,10 @@ export default function App() {
                     )}
 
                     {/* THE NEW ELEMENT-BASED RENDERING ENGINE (Rnd) */}
-                    <div className="flex-1 w-full h-full relative" onClick={() => setSelectedElementId(null)}>
+                    <div className="flex-1 w-full h-full relative" onPointerDown={() => {
+                      setSelectedElementId(null);
+                      setEditingElementId(null);
+                    }}>
                       {activeSlide.elements.map(el => {
                         const isEditing = editingElementId === el.id;
                         return (
