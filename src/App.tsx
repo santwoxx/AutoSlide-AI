@@ -1875,7 +1875,7 @@ Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`
               >
                 <div 
                   className="absolute inset-0 bg-cover bg-center transition-all duration-300"
-                  style={{ backgroundImage: `url(${theme.bg.replace('bg-[url(', '').replace(')]', '')})`, opacity: isFullscreen ? 1 : 0.95 }}
+                  style={{ backgroundImage: `url(${currentTheme.bg.replace('bg-[url(', '').replace(')]', '')})`, opacity: isFullscreen ? 1 : 0.95 }}
                 />
 
                 {/* Snap Lines Overlay */}
