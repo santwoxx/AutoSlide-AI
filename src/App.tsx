@@ -19,15 +19,12 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
-  Zap,
   HelpCircle,
   Code,
   Sparkles,
-  RefreshCw,
   FolderOpen,
   CheckCircle,
   FileDown,
-  UploadCloud,
   FileCode,
   Columns,
   Maximize2,
@@ -35,6 +32,7 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import { AnimatePresence, motion } from 'motion/react';
 import { SlideItem, UploadedImage, ThemeId, TransitionType, AspectRatio } from './types';
 import { THEMES } from './themes';
@@ -60,7 +58,7 @@ export default function App() {
   const [editingElementId, setEditingElementId] = useState<string | null>(null);
   const [selectedThemeId, setSelectedThemeId] = useState<ThemeId>('royal_corporate');
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
-  const [activeTab, setActiveTab] = useState<'slides' | 'editor' | 'batch' | 'images' | 'theme'>('slides');
+  const [activeTab, setActiveTab] = useState<'slides' | 'editor' | 'pop' | 'images' | 'theme'>('slides');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [draggingNode, setDraggingNode] = useState<{ id: string, startX: number, startY: number, startElX: number, startElY: number } | null>(null);
   const [resizingNode, setResizingNode] = useState<{ id: string, startX: number, startY: number, startWidth: number, startHeight: number, direction: 'r' | 'b' | 'br' } | null>(null);
@@ -407,6 +405,41 @@ export default function App() {
     setSelectedThemeId('royal_corporate'); // Garante que seja num tema corporativo azul/branco
     showToast(`POP WA Fort gerado! (${generated.length} slides)`);
     addLog('[SUCCESS] Procedimento Operacional WA Fort gerado via Inteligência POP.');
+  };
+
+  const exportCurrentSlideAsImage = async () => {
+    if (!canvasRef.current) return;
+    
+    try {
+      // Temporarily hide selection handles and outlines before capturing
+      const previousSelected = selectedElementId;
+      setSelectedElementId(null);
+      setEditingElementId(null);
+      
+      // Wait a tiny bit for React to re-render without selections
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      const canvas = await html2canvas(canvasRef.current, {
+        scale: 2, // higher resolution
+        useCORS: true,
+        backgroundColor: null // transparent
+      });
+      
+      const image = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = image;
+      link.download = `Procedimento_WAFort_Slide_${slides.findIndex(s => s.id === activeSlideId) + 1}.png`;
+      link.click();
+      
+      // Restore selection
+      setSelectedElementId(previousSelected);
+      
+      showToast('Imagem PNG baixada com sucesso!');
+      addLog('[SUCCESS] Slide exportado como PNG.');
+    } catch (err) {
+      showToast('Erro ao gerar imagem.');
+      console.error(err);
+    }
   };
 
   // ----------------------------------------------------
@@ -788,13 +821,22 @@ Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`
             <span className="sm:hidden">PPTX</span>
           </button>
           <button
+            onClick={exportCurrentSlideAsImage}
+            title="Download Imagem: Baixa a tela atual exatamente como aparece, em formato PNG."
+            className="flex items-center gap-1 bg-white/10 hover:bg-white/15 active:bg-white/20 text-emerald-300 hover:text-emerald-400 text-xs sm:text-sm font-bold py-2 px-2.5 sm:px-4 rounded-lg border border-white/20 transition duration-150 cursor-pointer shrink-0"
+          >
+            <ImageDown className="w-3.5 h-3.5 shrink-0" />
+            <span className="hidden sm:inline">Imagem (PNG)</span>
+            <span className="sm:hidden">PNG</span>
+          </button>
+          <button
             onClick={downloadPythonScript}
             title="Para Programadores e Integrações: Baixa o código de automação em Python (python-pptx) que recria a exata mesma apresentação no seu backend."
             className="flex items-center gap-1 bg-white/10 hover:bg-white/15 active:bg-white/20 text-blue-100 hover:text-white text-xs sm:text-sm font-bold py-2 px-2.5 sm:px-4 rounded-lg border border-white/20 transition duration-150 cursor-pointer shrink-0"
           >
             <FileCode className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-            <span className="hidden sm:inline">Gerar Código (.py)</span>
-            <span className="sm:hidden">Script</span>
+            <span className="hidden xl:inline">Gerar Código (.py)</span>
+            <span className="xl:hidden">Script</span>
           </button>
         </div>
       </header>
@@ -868,16 +910,16 @@ Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`
               )}
             </button>
             <button
-              onClick={() => setActiveTab('batch')}
+              onClick={() => setActiveTab('pop')}
               className={`flex-1 min-w-[64px] py-3.5 px-1.5 text-[11px] font-semibold flex flex-col items-center gap-1.5 transition duration-150 border-b-2 cursor-pointer relative ${
-                activeTab === 'batch'
+                activeTab === 'pop'
                   ? 'border-blue-600 text-blue-850 bg-white font-extrabold'
                   : 'border-transparent text-slate-500 hover:text-blue-700 hover:bg-slate-100/70:text-blue-400:bg-slate-800/50'
               }`}
             >
-              <FileText className={`w-3.5 h-3.5 ${activeTab === 'batch' ? 'text-blue-600' : 'text-slate-400'}`} />
-              <span>Lote</span>
-              {activeTab === 'batch' && (
+              <FileText className={`w-3.5 h-3.5 ${activeTab === 'pop' ? 'text-blue-600' : 'text-slate-400'}`} />
+              <span>POP</span>
+              {activeTab === 'pop' && (
                 <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-amber-500 rounded-full" />
               )}
             </button>
@@ -1299,15 +1341,15 @@ Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`
               </div>
             )}
 
-            {/* TAB: BATCH DOCUMENT PROCESSOR */}
-            {activeTab === 'batch' && (
+            {/* TAB: BATCH DOCUMENT PROCESSOR -> NOW EXCLUSIVE POP */}
+            {activeTab === 'pop' && (
               <div className="space-y-5">
-                <div className="bg-blue-50/60 p-3.5 rounded-xl border border-blue-100 shadow-sm animate-fade-in">
-                  <span className="text-xs text-blue-900 font-mono font-extrabold flex items-center gap-1">
-                    <Zap className="w-3.5 h-3.5" /> Compilação Dinâmica Automática
+                <div className="bg-indigo-900/10 p-3.5 rounded-xl border border-indigo-200 shadow-sm animate-fade-in">
+                  <span className="text-xs text-indigo-900 font-mono font-extrabold flex items-center gap-1">
+                    <Zap className="w-3.5 h-3.5" /> Motor WA Fort (POP)
                   </span>
                   <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-medium">
-                    Copie e cole a estrutura textual da sua apresentação. Nosso interpretador estático dividirá o texto pelo marcador <code className="text-amber-600 font-mono font-bold bg-amber-50 px-1 rounded">---</code> e categorizará cada slide baseado na formatação fornecida!
+                    Cole o texto bruto do seu <b>Procedimento Operacional Padrão</b> abaixo. O motor inteligente lerá os tópicos, formatará as cores corporativas, inserirá a Logo WA Fort automaticamente, calculará a altura das frases e dividirá o conteúdo em múltiplas páginas perfeitas.
                   </p>
                 </div>
 
@@ -1315,50 +1357,28 @@ Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`
                   <div className="flex justify-between items-center text-xs">
                     <button
                       onClick={insertMockMarkdownExample}
-                      className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 font-extrabold cursor-pointer bg-blue-50 px-2 py-1 rounded-md"
+                      className="text-xs text-indigo-700 hover:text-indigo-800 flex items-center gap-1 font-extrabold cursor-pointer bg-indigo-50 px-2 py-1 rounded-md transition-colors"
                     >
                       <RefreshCw className="w-3.5 h-3.5" /> Exemplo: Triagem de Atendimentos
                     </button>
-                    <span className="text-slate-500 font-bold font-mono">Motor Inteligente Otimizado</span>
+                    <span className="text-slate-500 font-bold font-mono">Motor Exclusivo</span>
                   </div>
 
                   <textarea
                     value={batchText}
                     onChange={(e) => setBatchText(e.target.value)}
                     rows={12}
-                    placeholder="Cole seu roteiro composto aqui..."
-                    className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 rounded-lg p-3 text-xs font-mono text-slate-800 focus:outline-none transition-all"
+                    placeholder="Cole seu procedimento POP aqui..."
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15 rounded-lg p-3 text-xs font-mono text-slate-800 focus:outline-none transition-all"
                   />
-                </div>
-
-                <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200 space-y-2 text-[11px] text-slate-600 shadow-sm">
-                  <span className="font-extrabold font-mono text-slate-700 text-xs block border-b border-slate-200 pb-1">Regras Estáticas do Compilador:</span>
-                  <p>• Linhas com <code className="text-blue-600 font-mono font-bold">- Tópico</code> ou <code className="text-blue-600 font-mono font-bold">* Tópico</code> geram slides de <b>Tópicos (Bullets)</b>.</p>
-                  <p>• Linhas com números curtos e pesados (e.g., <code className="text-amber-600 font-mono font-bold">90%</code>, <code className="text-amber-600 font-mono font-bold">10x</code>) geram layouts de <b>Métricas</b>.</p>
-                  <p>• Textos com aspas <code className="text-amber-600 font-mono font-bold">&quot;Minha Citação&quot;</code> seguidas por assinaturas criam layouts de <b>Citação</b>.</p>
-                  <p>• Linhas normais geram títulos, subtítulos ou explicações tradicionais.</p>
                 </div>
 
                 <button
                   onClick={runPOPCompile}
-                  className="w-full bg-indigo-900 hover:bg-indigo-800 text-amber-400 font-extrabold py-3 px-4 rounded-xl transition duration-155 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-indigo-950/20 border border-amber-500/30 mt-4"
+                  className="w-full bg-indigo-900 hover:bg-indigo-800 text-amber-400 font-extrabold py-3.5 px-4 rounded-xl transition duration-155 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-indigo-950/20 border border-amber-500/30 mt-4"
                 >
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                  <span>Gerar Procedimento WA Fort (POP)</span>
-                </button>
-
-                <div className="flex items-center gap-4 my-2">
-                  <div className="h-px bg-slate-200 flex-1"></div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Outras opções</span>
-                  <div className="h-px bg-slate-200 flex-1"></div>
-                </div>
-
-                <button
-                  onClick={runBatchCompile}
-                  className="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg transition duration-155 flex items-center justify-center gap-2 cursor-pointer shadow-sm text-xs"
-                >
-                  <Zap className="w-3 h-3 text-slate-500" />
-                  <span>Processar Roteiro Genérico (via "---")</span>
+                  <span>Gerar Telas do Procedimento (POP)</span>
                 </button>
               </div>
             )}

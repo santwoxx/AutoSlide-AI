@@ -115,10 +115,10 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
   const slides: SlideItem[] = [];
   
   // Aspect ratio baseline limits
-  const maxY = aspectRatio === '16:9' ? 85 : 88;
+  const maxY = aspectRatio === '16:9' ? 82 : 86;
   const paddingX = aspectRatio === '16:9' ? 6 : 8;
-  const titleFontSize = aspectRatio === '16:9' ? 36 : 42;
-  const bodyFontSize = aspectRatio === '16:9' ? 22 : 28;
+  const titleFontSize = aspectRatio === '16:9' ? 32 : 36;
+  const bodyFontSize = aspectRatio === '16:9' ? 18 : 22;
   const logoWidth = aspectRatio === '16:9' ? 12 : 20;
   const logoHeight = aspectRatio === '16:9' ? 12 : 12;
 
@@ -153,10 +153,11 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
     const isHeading = line.toUpperCase() === line && line.length < 50;
     const isMainTitle = slideIndex === 0 && currentY === 15;
 
-    let textHeight = isHeading ? 8 : 10;
-    // Estimate text height based on length (very rough)
-    if (line.length > (aspectRatio === '16:9' ? 100 : 50)) {
-      textHeight += Math.floor(line.length / (aspectRatio === '16:9' ? 100 : 50)) * 6;
+    let textHeight = isHeading ? 7 : 8;
+    // Estimate text height based on length (very rough) - increased multiplier
+    const charsPerLine = aspectRatio === '16:9' ? 80 : 45;
+    if (line.length > charsPerLine) {
+      textHeight += Math.ceil((line.length - charsPerLine) / charsPerLine) * (isHeading ? 6 : 5);
     }
 
     if (currentY + textHeight > maxY) {
@@ -178,7 +179,7 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
       align: 'left'
     });
 
-    currentY += textHeight + 2;
+    currentY += textHeight + 1.5;
   });
 
   // Add signature to the last slide
