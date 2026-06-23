@@ -761,6 +761,7 @@ export default function App() {
           </button>
           <button
             onClick={downloadPptxFile}
+            title="Download PowerPoint: Exporta a apresentação pronta para abrir e editar no Microsoft PowerPoint."
             className="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs sm:text-sm font-bold py-2 px-3 sm:px-4 shadow-md shadow-blue-950/20 rounded-lg border border-blue-500 hover:scale-[1.01] transition-all duration-150 cursor-pointer shrink-0"
           >
             <Download className="w-3.5 h-3.5 text-amber-400 shrink-0" />
@@ -769,10 +770,11 @@ export default function App() {
           </button>
           <button
             onClick={downloadPythonScript}
+            title="Para Programadores e Integrações: Baixa o código de automação em Python (python-pptx) que recria a exata mesma apresentação no seu backend."
             className="flex items-center gap-1 bg-white/10 hover:bg-white/15 active:bg-white/20 text-blue-100 hover:text-white text-xs sm:text-sm font-bold py-2 px-2.5 sm:px-4 rounded-lg border border-white/20 transition duration-150 cursor-pointer shrink-0"
           >
             <FileCode className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-            <span className="hidden sm:inline">Gerar Script (.py)</span>
+            <span className="hidden sm:inline">Gerar Código (.py)</span>
             <span className="sm:hidden">Script</span>
           </button>
         </div>
