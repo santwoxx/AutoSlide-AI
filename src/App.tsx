@@ -33,7 +33,8 @@ import {
   Moon,
   ImageDown,
   Zap,
-  RefreshCw
+  RefreshCw,
+  UploadCloud
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { AnimatePresence, motion } from 'motion/react';
