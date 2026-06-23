@@ -8,7 +8,8 @@ import { SlideItem, UploadedImage, SlideTheme } from './types';
 export function generatePythonScript(
   slides: SlideItem[],
   theme: SlideTheme,
-  uploadedImages: UploadedImage[]
+  uploadedImages: UploadedImage[],
+  aspectRatio: '16:9' | '9:16' = '16:9'
 ): string {
   // Convert uploaded images to helper map
   const imageMap = new Map(uploadedImages.map((img) => [img.id, img]));
@@ -58,10 +59,18 @@ FONT_TITLE = '${fontTitleName}'
 FONT_BODY = '${fontBodyName}'
 
 def create_deck():
-    # Inicializa apresentação widescreen 16:9
+    # Inicializa apresentação com o formato selecionado
     prs = Presentation()
-    prs.slide_width = Inches(13.333)
-    prs.slide_height = Inches(7.5)
+    if "${aspectRatio}" == "16:9":
+        prs.slide_width = Inches(13.333)
+        prs.slide_height = Inches(7.5)
+        canvas_w_inches = 13.333
+        canvas_h_inches = 7.5
+    else:
+        prs.slide_width = Inches(5.625)
+        prs.slide_height = Inches(10.0)
+        canvas_w_inches = 5.625
+        canvas_h_inches = 10.0
     
     # Vamos usar o layout embranquecido/vazio padrão para controle total dos elementos
     blank_layout = prs.slide_layouts[6]
@@ -148,29 +157,29 @@ def create_deck():
 
     // Visual slide decorator (drawn background accents based on theme)
     if (theme.id === 'studio_tech') {
-      // Tech-grid dots or border
       code += `    # Borda decorativa de estúdio tecnológico
-    add_card_shape(slide, Inches(0.2), Inches(0.2), Inches(12.933), Inches(0.05), COLOR_ACCENT)
-    add_card_shape(slide, Inches(0.2), Inches(7.25), Inches(12.933), Inches(0.05), COLOR_TEXT)
+    add_card_shape(slide, Inches(0.2), Inches(0.2), Inches(canvas_w_inches - 0.4), Inches(0.05), COLOR_ACCENT)
+    add_card_shape(slide, Inches(0.2), Inches(canvas_h_inches - 0.25), Inches(canvas_w_inches - 0.4), Inches(0.05), COLOR_TEXT)
 `;
     } else if (theme.id === 'warm_editorial') {
-      // Minimal elegant line separation
       code += `    # Linha divisória editorial
-    add_card_shape(slide, Inches(0.7), Inches(0.5), Inches(11.933), Inches(0.03), COLOR_ACCENT)
+    add_card_shape(slide, Inches(0.7), Inches(0.5), Inches(canvas_w_inches - 1.4), Inches(0.03), COLOR_ACCENT)
 `;
     } else if (theme.id === 'neon_vibrant') {
-      // Radiant bottom accent
       code += `    # Borda neon brilhante
-    add_card_shape(slide, Inches(0), Inches(7.4), Inches(13.333), Inches(0.1), COLOR_ACCENT)
+    add_card_shape(slide, Inches(0), Inches(canvas_h_inches - 0.1), Inches(canvas_w_inches), Inches(0.1), COLOR_ACCENT)
 `;
     }
 
-    // 3. Layout Component Placements (Dynamic Canva Mode)
+    // 3. Layout Component Placements
     (slide.elements || []).forEach((el, elIdx) => {
-      const xInches = (el.x / 100) * 13.333;
-      const yInches = (el.y / 100) * 7.5;
-      const wInches = (el.width / 100) * 13.333;
-      const hInches = (el.height / 100) * 7.5;
+      const wBase = aspectRatio === '16:9' ? 13.333 : 5.625;
+      const hBase = aspectRatio === '16:9' ? 7.5 : 10.0;
+      
+      const xInches = (el.x / 100) * wBase;
+      const yInches = (el.y / 100) * hBase;
+      const wInches = (el.width / 100) * wBase;
+      const hInches = (el.height / 100) * hBase;
 
       if (el.type === 'text') {
         const elColor = el.color === 'accent' ? 'COLOR_ACCENT' : (el.color === 'card' ? 'RGBColor(255, 255, 255)' : 'COLOR_TEXT');

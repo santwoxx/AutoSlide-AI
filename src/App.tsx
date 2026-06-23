@@ -36,7 +36,7 @@ import {
   Moon
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { SlideItem, UploadedImage, ThemeId, TransitionType } from './types';
+import { SlideItem, UploadedImage, ThemeId, TransitionType, AspectRatio } from './types';
 import { THEMES } from './themes';
 import { INITIAL_SLIDES } from './initialData';
 import { parseDocumentToSlides, formatBytes, generateId } from './utils';
@@ -61,6 +61,7 @@ export default function App() {
   const [selectedThemeId, setSelectedThemeId] = useState<ThemeId>('royal_corporate');
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [activeTab, setActiveTab] = useState<'slides' | 'editor' | 'batch' | 'images' | 'theme'>('slides');
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
   const [appTheme, setAppTheme] = useState<'light' | 'dark'>(() => {
     try {
@@ -426,7 +427,7 @@ export default function App() {
   // ----------------------------------------------------
   // Code Copy / Download Controls
   // ----------------------------------------------------
-  const compiledPythonCode = generatePythonScript(slides, currentTheme, uploadedImages);
+  const compiledPythonCode = generatePythonScript(slides, currentTheme, uploadedImages, aspectRatio);
 
   const copyCodeToClipboard = () => {
     navigator.clipboard.writeText(compiledPythonCode);
@@ -453,9 +454,9 @@ export default function App() {
   const downloadPptxFile = async () => {
     try {
       showToast('Iniciando compilação do arquivo .pptx...');
-      addLog('[PROCESS] Gerando representações binárias dos slides 16:9 em formato PPTX...');
-      await exportToPowerpoint(slides, currentTheme, uploadedImages);
-      showToast('Download do arquivo PowerPoint concluído!');
+      addLog('[PROCESS] Gerando representações binárias dos slides em formato PPTX...');
+      await exportToPowerpoint(slides, currentTheme, uploadedImages, aspectRatio);
+      showToast('Apresentação .pptx baixada com sucesso!');
       addLog('[SUCCESS] Compilação PowerPoint (.pptx) fechada e transferida.');
     } catch (err) {
       showToast('Instabilidade ao exportar PPTX: ' + err);
@@ -1401,6 +1402,24 @@ export default function App() {
                   </p>
                 </div>
 
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                  <label className="block text-xs font-bold text-slate-700 mb-2">Formato da Apresentação</label>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setAspectRatio('16:9')}
+                      className={`flex-1 py-2 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer ${aspectRatio === '16:9' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}
+                    >
+                      Widescreen (16:9)
+                    </button>
+                    <button
+                      onClick={() => setAspectRatio('9:16')}
+                      className={`flex-1 py-2 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer ${aspectRatio === '9:16' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}
+                    >
+                      Vertical / Reels (9:16)
+                    </button>
+                  </div>
+                </div>
+
                 <div className="space-y-3">
                   {THEMES.map((theme) => {
                     const isSelected = theme.id === selectedThemeId;
@@ -1648,11 +1667,14 @@ export default function App() {
             )}
             
             {/* STAGE: THE 16:9 DYNAMIC CANVAS FRAME */}
-            <div className={isFullscreen 
-              ? "w-full max-w-6xl aspect-[16/9] relative shadow-2xl rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 transition-all duration-300 max-h-[82vh]"
-              : "w-full relative shadow-2xl rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 transition-all duration-300"
-            }>
-              <div ref={canvasRef} className="relative w-full aspect-[16/9] overflow-hidden select-none">
+            <div 
+              className={isFullscreen 
+                ? "w-full max-w-6xl relative shadow-2xl rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 transition-all duration-300 max-h-[82vh]"
+                : "w-full relative shadow-2xl rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 transition-all duration-300"
+              }
+              style={{ aspectRatio: aspectRatio === '16:9' ? '16/9' : '9/16' }}
+            >
+              <div ref={canvasRef} className="relative w-full overflow-hidden select-none" style={{ aspectRatio: aspectRatio === '16:9' ? '16/9' : '9/16' }}>
                 
                 {/* Animate slide transitions */}
                 <AnimatePresence mode="wait">

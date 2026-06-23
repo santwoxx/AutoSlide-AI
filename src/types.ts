@@ -4,6 +4,7 @@
  */
 
 export type ElementType = 'text' | 'image' | 'shape';
+export type AspectRatio = '16:9' | '9:16';
 
 export interface SlideElement {
   id: string;

@@ -20,12 +20,21 @@ function rgbToHex(rgb: [number, number, number]): string {
 export async function exportToPowerpoint(
   slides: SlideItem[],
   theme: SlideTheme,
-  uploadedImages: UploadedImage[]
+  uploadedImages: UploadedImage[],
+  aspectRatio: '16:9' | '9:16' = '16:9'
 ): Promise<void> {
   const pptx = new pptxgen();
 
-  // Set Widescreen 16:9 layout
-  pptx.layout = 'LAYOUT_16X9';
+  // Set layout based on aspect ratio
+  if (aspectRatio === '16:9') {
+    pptx.layout = 'LAYOUT_16X9';
+  } else {
+    pptx.defineLayout({ name: 'PORTRAIT_9X16', width: 5.625, height: 10 });
+    pptx.layout = 'PORTRAIT_9X16';
+  }
+
+  const canvasWInches = aspectRatio === '16:9' ? 13.333 : 5.625;
+  const canvasHInches = aspectRatio === '16:9' ? 7.5 : 10;
 
   const imageMap = new Map(uploadedImages.map((img) => [img.id, img.dataUrl]));
 
@@ -80,12 +89,12 @@ export async function exportToPowerpoint(
       });
     }
 
-    // 3. Layout Component Placements (Dynamic Canva Mode)
+    // 3. Layout Component Placements
     (slide.elements || []).forEach(el => {
-      const xInches = (el.x / 100) * 13.333;
-      const yInches = (el.y / 100) * 7.5;
-      const wInches = (el.width / 100) * 13.333;
-      const hInches = (el.height / 100) * 7.5;
+      const xInches = (el.x / 100) * canvasWInches;
+      const yInches = (el.y / 100) * canvasHInches;
+      const wInches = (el.width / 100) * canvasWInches;
+      const hInches = (el.height / 100) * canvasHInches;
 
       if (el.type === 'text') {
         const elColor = el.color === 'accent' ? accentHex : (el.color === 'card' ? '#FFFFFF' : textHex);
