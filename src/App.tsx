@@ -2058,7 +2058,13 @@ Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`
                               </div>
                             )}
                             {el.type === 'shape' && (
-                              <div className={`w-full h-full rounded-xl opacity-80 ${el.color === 'card' ? 'bg-slate-200/50' : 'bg-blue-500'}`} />
+                              <div 
+                                className={`w-full h-full ${el.dropShadow ? 'shadow-xl shadow-slate-900/10' : ''}`}
+                                style={{ 
+                                  backgroundColor: el.color?.startsWith('#') ? el.color : (el.color === 'card' ? 'rgba(226, 232, 240, 0.5)' : '#3b82f6'),
+                                  borderRadius: el.borderRadius ? `${el.borderRadius}px` : '0px'
+                                }}
+                              />
                             )}
                           </div>
                         </div>

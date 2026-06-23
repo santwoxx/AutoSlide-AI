@@ -114,20 +114,32 @@ export function parseDocumentToSlides(text: string): SlideItem[] {
   const slides: SlideItem[] = [];
   
   const paddingX = aspectRatio === '16:9' ? 6 : 8;
-  const logoWidth = aspectRatio === '16:9' ? 25 : 45;
-  const logoHeight = aspectRatio === '16:9' ? 18 : 16; 
-  const headerHeight = aspectRatio === '16:9' ? 22 : 18;
-  const footerHeight = aspectRatio === '16:9' ? 6 : 5;
+  const logoWidth = aspectRatio === '16:9' ? 18 : 28;
+  const logoHeight = aspectRatio === '16:9' ? 12 : 10; 
+  const footerHeight = 5;
 
   popBlocks.forEach((block) => {
     if (!block.trim()) return;
 
     const lines = block.trim().split(/\n/);
+    let titleLine = 'PROCEDIMENTO OPERACIONAL PADRÃO';
+    let contentLines = lines;
+
+    // Detect if first line looks like a title
+    if (lines[0] && lines[0].length < 80 && !lines[0].startsWith('-')) {
+      titleLine = lines[0].trim().toUpperCase();
+      contentLines = lines.slice(1);
+    }
+    // Also remove empty lines at the start
+    while (contentLines.length > 0 && !contentLines[0].trim()) {
+      contentLines.shift();
+    }
+
     let currentChunk = '';
     const chunks: string[] = [];
-    const MAX_CHARS_PER_SLIDE = aspectRatio === '16:9' ? 500 : 700;
+    const MAX_CHARS_PER_SLIDE = aspectRatio === '16:9' ? 600 : 750;
 
-    lines.forEach((line) => {
+    contentLines.forEach((line) => {
       if (currentChunk.length + line.length > MAX_CHARS_PER_SLIDE && currentChunk.trim().length > 0) {
         chunks.push(currentChunk.trim());
         currentChunk = line;
@@ -137,119 +149,143 @@ export function parseDocumentToSlides(text: string): SlideItem[] {
     });
     if (currentChunk) chunks.push(currentChunk);
 
+    if (chunks.length === 0) chunks.push(''); // ensure at least 1 slide
+
     chunks.forEach((chunk, index) => {
       let currentElements: SlideElement[] = [];
 
-      // 1. Top Vibrant Blue Bar
-      currentElements.push({
-        id: generateId(),
-        type: 'shape',
-        x: 0,
-        y: 0,
-        width: 100,
-        height: headerHeight,
-        color: '#1d4ed8' // Vibrant Royal Blue
-      });
-
-      // 2. Gold Line Under Header
-      currentElements.push({
-        id: generateId(),
-        type: 'shape',
-        x: 0,
-        y: headerHeight,
-        width: 100,
-        height: 1.5,
-        color: '#fbbf24' // Gold
-      });
-
-      // 3. Logo WA Fort (Centered in Header)
+      // 1. Logo WA Fort (Top Right)
       currentElements.push({
         id: generateId(),
         type: 'image',
         content: 'wafort_logo',
         x: 100 - paddingX - logoWidth,
-        y: (headerHeight - logoHeight) / 2,
+        y: 5,
         width: logoWidth,
         height: logoHeight,
         imageFit: 'contain'
       });
 
-      // 4. Document Label in Header
+      // 2. Company Name & Title (Top Left)
       currentElements.push({
         id: generateId(),
         type: 'text',
-        content: 'WA FORT • PROCEDIMENTO PADRÃO',
+        content: 'WA FORT',
         x: paddingX,
-        y: (headerHeight / 2) - (aspectRatio === '16:9' ? 3 : 2),
+        y: 6,
         width: 60,
-        height: 10,
-        fontSize: aspectRatio === '16:9' ? 20 : 26,
+        height: 4,
+        fontSize: aspectRatio === '16:9' ? 12 : 14,
         fontFamily: 'heading',
-        color: '#ffffff',
+        color: '#2563EB', // Medium Blue Accent
         bold: true,
         align: 'left'
       });
 
-      // 5. Body Text
+      currentElements.push({
+        id: generateId(),
+        type: 'text',
+        content: titleLine,
+        x: paddingX,
+        y: 10,
+        width: 80,
+        height: 10,
+        fontSize: aspectRatio === '16:9' ? 24 : 28,
+        fontFamily: 'heading',
+        color: '#0F172A', // Dark Blue
+        bold: true,
+        align: 'left'
+      });
+
+      // 3. White Card with Shadow
+      currentElements.push({
+        id: generateId(),
+        type: 'shape',
+        x: paddingX,
+        y: 22,
+        width: 100 - (paddingX * 2),
+        height: 100 - 22 - footerHeight - 4,
+        color: '#ffffff',
+        borderRadius: 16,
+        dropShadow: true
+      });
+
+      // 4. Vertical Blue Accent Line inside the card
+      currentElements.push({
+        id: generateId(),
+        type: 'shape',
+        x: paddingX + 2,
+        y: 26,
+        width: 0.5,
+        height: 100 - 22 - footerHeight - 12,
+        color: '#2563EB',
+        borderRadius: 2
+      });
+
+      // 5. Body Text Inside the Card
       const textContent = chunk.trim();
       const charCount = textContent.length;
       
-      let baseSize = aspectRatio === '16:9' ? 22 : 28;
+      let baseSize = aspectRatio === '16:9' ? 18 : 22;
       if (charCount > 300) baseSize -= 2;
       if (charCount > 500) baseSize -= 4;
-      if (charCount > 700) baseSize -= 6;
       
       currentElements.push({
         id: generateId(),
         type: 'text',
         content: textContent,
-        x: paddingX,
-        y: headerHeight + 6,
-        width: 100 - (paddingX * 2),
-        height: 100 - headerHeight - footerHeight - 12, 
+        x: paddingX + 5,
+        y: 26,
+        width: 100 - (paddingX * 2) - 8,
+        height: 100 - 22 - footerHeight - 12, 
         fontSize: baseSize,
         fontFamily: 'body',
-        color: '#0f172a', // Very dark blue for text (almost black)
+        color: '#334155', // Slate 700 (dark gray) for high readability
         bold: false,
         align: 'left'
       });
 
-      // 6. Footer Gold Line
+      // 6. Footer Line
       currentElements.push({
         id: generateId(),
         type: 'shape',
-        x: 0,
-        y: 100 - footerHeight - 1.5,
-        width: 100,
-        height: 1.5,
-        color: '#fbbf24'
+        x: paddingX,
+        y: 100 - footerHeight - 2,
+        width: 100 - (paddingX * 2),
+        height: 0.2,
+        color: '#cbd5e1' // Slate 300
       });
 
-      // 7. Footer Blue Bar
-      currentElements.push({
-        id: generateId(),
-        type: 'shape',
-        x: 0,
-        y: 100 - footerHeight,
-        width: 100,
-        height: footerHeight,
-        color: '#1d4ed8'
-      });
-
-      // 8. Pagination Text in Footer
+      // 7. Footer Text (Left)
       currentElements.push({
         id: generateId(),
         type: 'text',
-        content: `Página ${index + 1} de ${chunks.length}`,
+        content: 'Procedimentos Internos • Uso Confidencial',
         x: paddingX,
-        y: 100 - footerHeight + (aspectRatio === '16:9' ? 1.5 : 1),
-        width: 50,
-        height: 5,
-        fontSize: aspectRatio === '16:9' ? 14 : 18,
+        y: 100 - footerHeight,
+        width: 60,
+        height: 4,
+        fontSize: aspectRatio === '16:9' ? 10 : 12,
         fontFamily: 'body',
-        color: '#ffffff',
-        bold: true,
+        color: '#64748b', // Slate 500
+        bold: false,
         align: 'left'
+      });
+
+      // 8. Pagination Text (Right)
+      currentElements.push({
+        id: generateId(),
+        type: 'text',
+        content: `${index + 1} / ${chunks.length}`,
+        x: 100 - paddingX - 10,
+        y: 100 - footerHeight,
+        width: 10,
+        height: 4,
+        fontSize: aspectRatio === '16:9' ? 10 : 12,
+        fontFamily: 'body',
+        color: '#64748b',
+        bold: true,
+        align: 'right'
       });
 
       // 9. Signature Block ONLY on the last slide
@@ -257,24 +293,24 @@ export function parseDocumentToSlides(text: string): SlideItem[] {
         currentElements.push({
           id: generateId(),
           type: 'shape',
-          x: 100 - paddingX - 40,
-          y: 100 - footerHeight - 10,
-          width: 40,
-          height: 0.5,
-          color: '#1d4ed8'
+          x: 100 - paddingX - 35,
+          y: 100 - footerHeight - 14,
+          width: 30,
+          height: 0.3,
+          color: '#0F172A'
         });
 
         currentElements.push({
           id: generateId(),
           type: 'text',
           content: 'Assinatura do Responsável',
-          x: 100 - paddingX - 40,
-          y: 100 - footerHeight - 8.5,
-          width: 40,
-          height: 5,
-          fontSize: aspectRatio === '16:9' ? 14 : 18,
+          x: 100 - paddingX - 35,
+          y: 100 - footerHeight - 13,
+          width: 30,
+          height: 4,
+          fontSize: aspectRatio === '16:9' ? 12 : 14,
           fontFamily: 'body',
-          color: '#1d4ed8',
+          color: '#0F172A',
           bold: true,
           align: 'center'
         });
@@ -283,7 +319,7 @@ export function parseDocumentToSlides(text: string): SlideItem[] {
       slides.push({
         id: 'pop-' + generateId(),
         elements: currentElements,
-        backgroundColor: '#ffffff' // Pure white background
+        backgroundColor: '#F8FAFC' // Light Slate 50 background
       });
     });
   });

@@ -22,6 +22,8 @@ export interface SlideElement {
   bold?: boolean;
   italic?: boolean;
   align?: 'left' | 'center' | 'right';
+  borderRadius?: number;
+  dropShadow?: boolean;
   
   imageFit?: 'cover' | 'contain' | 'fill' | 'scale-down';
   
