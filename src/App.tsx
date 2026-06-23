@@ -31,7 +31,9 @@ import {
   Minimize2,
   Sun,
   Moon,
-  ImageDown
+  ImageDown,
+  Zap,
+  RefreshCw
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { AnimatePresence, motion } from 'motion/react';
