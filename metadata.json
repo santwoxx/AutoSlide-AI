@@ -1,0 +1,6 @@
+{
+  "name": "Automatizador de Slides & Script Python-PPTX",
+  "description": "Crie apresentações elegantes de forma automatizada com visualização fluida e gere scripts Python com a biblioteca python-pptx prontos para rodar localmente.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
