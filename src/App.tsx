@@ -66,6 +66,7 @@ export default function App() {
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [draggingNode, setDraggingNode] = useState<{ id: string, startX: number, startY: number, startElX: number, startElY: number } | null>(null);
   const [resizingNode, setResizingNode] = useState<{ id: string, startX: number, startY: number, startWidth: number, startHeight: number, direction: 'r' | 'b' | 'br' } | null>(null);
+  const [snapLines, setSnapLines] = useState<{ type: 'vertical' | 'horizontal', pos: number }[]>([]);
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
@@ -1786,8 +1787,62 @@ Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`
                     const dy = e.clientY - draggingNode.startY;
                     const dxPercent = (dx / rect.width) * 100;
                     const dyPercent = (dy / rect.height) * 100;
-                    const newX = Math.max(0, draggingNode.startElX + dxPercent);
-                    const newY = Math.max(0, draggingNode.startElY + dyPercent);
+                    let newX = Math.max(0, draggingNode.startElX + dxPercent);
+                    let newY = Math.max(0, draggingNode.startElY + dyPercent);
+                    
+                    // Canva-style Snapping logic
+                    const SNAP_THRESHOLD = 2; // % threshold
+                    const lines: { type: 'vertical' | 'horizontal', pos: number }[] = [];
+                    
+                    const elWidth = activeSlide.elements.find(el => el.id === draggingNode.id)?.width || 0;
+                    const elHeight = activeSlide.elements.find(el => el.id === draggingNode.id)?.height || 0;
+                    
+                    const elCenterX = newX + elWidth / 2;
+                    const elCenterY = newY + elHeight / 2;
+
+                    // 1. Snap to Slide Center
+                    if (Math.abs(elCenterX - 50) < SNAP_THRESHOLD) {
+                      newX = 50 - elWidth / 2;
+                      lines.push({ type: 'vertical', pos: 50 });
+                    }
+                    if (Math.abs(elCenterY - 50) < SNAP_THRESHOLD) {
+                      newY = 50 - elHeight / 2;
+                      lines.push({ type: 'horizontal', pos: 50 });
+                    }
+
+                    // 2. Snap to other elements
+                    activeSlide.elements.forEach(otherEl => {
+                      if (otherEl.id === draggingNode.id) return;
+                      
+                      const otherCenterX = otherEl.x + otherEl.width / 2;
+                      const otherCenterY = otherEl.y + otherEl.height / 2;
+
+                      // Vertical alignments (X axis)
+                      if (Math.abs(elCenterX - otherCenterX) < SNAP_THRESHOLD) {
+                        newX = otherCenterX - elWidth / 2;
+                        lines.push({ type: 'vertical', pos: otherCenterX });
+                      } else if (Math.abs(newX - otherEl.x) < SNAP_THRESHOLD) {
+                        newX = otherEl.x;
+                        lines.push({ type: 'vertical', pos: otherEl.x });
+                      } else if (Math.abs((newX + elWidth) - (otherEl.x + otherEl.width)) < SNAP_THRESHOLD) {
+                        newX = otherEl.x + otherEl.width - elWidth;
+                        lines.push({ type: 'vertical', pos: otherEl.x + otherEl.width });
+                      }
+
+                      // Horizontal alignments (Y axis)
+                      if (Math.abs(elCenterY - otherCenterY) < SNAP_THRESHOLD) {
+                        newY = otherCenterY - elHeight / 2;
+                        lines.push({ type: 'horizontal', pos: otherCenterY });
+                      } else if (Math.abs(newY - otherEl.y) < SNAP_THRESHOLD) {
+                        newY = otherEl.y;
+                        lines.push({ type: 'horizontal', pos: otherEl.y });
+                      } else if (Math.abs((newY + elHeight) - (otherEl.y + otherEl.height)) < SNAP_THRESHOLD) {
+                        newY = otherEl.y + otherEl.height - elHeight;
+                        lines.push({ type: 'horizontal', pos: otherEl.y + otherEl.height });
+                      }
+                    });
+
+                    setSnapLines(lines);
                     updateElement(draggingNode.id, { x: newX, y: newY });
                     return;
                   }
@@ -1807,9 +1862,35 @@ Todos os operadores e colaboradores responsáveis pela triagem de atendimentos.`
                     updateElement(resizingNode.id, { width: newW, height: newH });
                   }
                 }}
-                onPointerUp={() => { setDraggingNode(null); setResizingNode(null); }}
-                onPointerLeave={() => { setDraggingNode(null); setResizingNode(null); }}
+                onPointerUp={() => {
+                  setDraggingNode(null);
+                  setResizingNode(null);
+                  setSnapLines([]);
+                }}
+                onPointerLeave={() => {
+                  setDraggingNode(null);
+                  setResizingNode(null);
+                  setSnapLines([]);
+                }}
               >
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-all duration-300"
+                  style={{ backgroundImage: `url(${theme.bg.replace('bg-[url(', '').replace(')]', '')})`, opacity: isFullscreen ? 1 : 0.95 }}
+                />
+
+                {/* Snap Lines Overlay */}
+                {snapLines.map((line, idx) => (
+                  <div
+                    key={`snap-${idx}`}
+                    className="absolute bg-fuchsia-500 z-[200] pointer-events-none shadow-[0_0_4px_rgba(217,70,239,0.8)]"
+                    style={{
+                      ...(line.type === 'vertical' 
+                        ? { left: `${line.pos}%`, top: 0, bottom: 0, width: '1.5px' }
+                        : { top: `${line.pos}%`, left: 0, right: 0, height: '1.5px' }
+                      )
+                    }}
+                  />
+                ))}
                 
                 {/* Animate slide transitions */}
                 <AnimatePresence mode="wait">
