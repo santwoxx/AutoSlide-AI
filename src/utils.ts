@@ -111,13 +111,14 @@ export function parseDocumentToSlides(text: string): SlideItem[] {
 export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:16'): SlideItem[] {
   if (!text.trim()) return [];
 
-  // Split by "---" if user provides multiple POPs
   const popBlocks = text.split(/---\s*\n|---\s*$/);
   const slides: SlideItem[] = [];
   
   const paddingX = aspectRatio === '16:9' ? 6 : 8;
   const logoWidth = aspectRatio === '16:9' ? 20 : 35;
-  const logoHeight = aspectRatio === '16:9' ? 18 : 18;
+  const logoHeight = aspectRatio === '16:9' ? 12 : 12; // Adjust logo height for the header
+  const headerHeight = aspectRatio === '16:9' ? 18 : 12;
+  const footerHeight = aspectRatio === '16:9' ? 6 : 4;
 
   popBlocks.forEach((block) => {
     if (!block.trim()) return;
@@ -126,10 +127,9 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
     const lines = block.trim().split(/\n/);
     let currentChunk = '';
     const chunks: string[] = [];
-    const MAX_CHARS_PER_SLIDE = aspectRatio === '16:9' ? 650 : 850; 
+    const MAX_CHARS_PER_SLIDE = aspectRatio === '16:9' ? 550 : 750; // Reduced slightly to account for headers/footers
 
     lines.forEach((line) => {
-      // If adding this line exceeds the limit and we already have content, push the chunk
       if (currentChunk.length + line.length > MAX_CHARS_PER_SLIDE && currentChunk.trim().length > 0) {
         chunks.push(currentChunk.trim());
         currentChunk = line;
@@ -142,65 +142,141 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
     chunks.forEach((chunk, index) => {
       let currentElements: SlideElement[] = [];
 
-      // Add Logo WA Fort
+      // 1. Top Blue Bar
+      currentElements.push({
+        id: generateId(),
+        type: 'shape',
+        x: 0,
+        y: 0,
+        width: 100,
+        height: headerHeight,
+        color: '#0f172a' // Very dark blue
+      });
+
+      // 2. Gold Line Under Header
+      currentElements.push({
+        id: generateId(),
+        type: 'shape',
+        x: 0,
+        y: headerHeight,
+        width: 100,
+        height: 0.8,
+        color: '#fbbf24' // Gold
+      });
+
+      // 3. Logo WA Fort (Centered in Header)
       currentElements.push({
         id: generateId(),
         type: 'image',
         content: 'wafort_logo',
         x: 100 - paddingX - logoWidth,
-        y: 3,
+        y: (headerHeight - logoHeight) / 2,
         width: logoWidth,
         height: logoHeight,
         imageFit: 'contain'
       });
 
+      // 4. Document Label in Header
+      currentElements.push({
+        id: generateId(),
+        type: 'text',
+        content: 'WA FORT • PROCEDIMENTO PADRÃO',
+        x: paddingX,
+        y: (headerHeight / 2) - (aspectRatio === '16:9' ? 3 : 2),
+        width: 60,
+        height: 10,
+        fontSize: aspectRatio === '16:9' ? 18 : 22,
+        fontFamily: 'heading',
+        color: '#ffffff',
+        bold: true,
+        align: 'left'
+      });
+
+      // 5. Body Text
       const textContent = chunk.trim();
       const charCount = textContent.length;
       
-      let baseSize = aspectRatio === '16:9' ? 18 : 22;
+      let baseSize = aspectRatio === '16:9' ? 20 : 24;
       if (charCount > 300) baseSize -= 2;
-      if (charCount > 600) baseSize -= 4;
-      if (charCount > 900) baseSize -= 6;
-      if (charCount > 1200) baseSize -= 8;
+      if (charCount > 500) baseSize -= 4;
+      if (charCount > 700) baseSize -= 6;
       
       currentElements.push({
         id: generateId(),
         type: 'text',
         content: textContent,
         x: paddingX,
-        y: 15,
+        y: headerHeight + 5,
         width: 100 - (paddingX * 2),
-        height: 65, 
+        height: 100 - headerHeight - footerHeight - 10, 
         fontSize: baseSize,
         fontFamily: 'body',
-        color: 'text',
+        color: '#1e293b', // Slate 800 for better readability
         bold: false,
         align: 'left'
       });
 
-      // Signature Line ONLY on the last slide of the block
+      // 6. Footer Gold Line
+      currentElements.push({
+        id: generateId(),
+        type: 'shape',
+        x: 0,
+        y: 100 - footerHeight - 0.8,
+        width: 100,
+        height: 0.8,
+        color: '#fbbf24'
+      });
+
+      // 7. Footer Blue Bar
+      currentElements.push({
+        id: generateId(),
+        type: 'shape',
+        x: 0,
+        y: 100 - footerHeight,
+        width: 100,
+        height: footerHeight,
+        color: '#0f172a'
+      });
+
+      // 8. Pagination Text in Footer
+      currentElements.push({
+        id: generateId(),
+        type: 'text',
+        content: `Página ${index + 1} de ${chunks.length}`,
+        x: paddingX,
+        y: 100 - footerHeight + (aspectRatio === '16:9' ? 1 : 0.5),
+        width: 50,
+        height: 5,
+        fontSize: aspectRatio === '16:9' ? 12 : 16,
+        fontFamily: 'body',
+        color: '#cbd5e1',
+        bold: false,
+        align: 'left'
+      });
+
+      // 9. Signature Block ONLY on the last slide
       if (index === chunks.length - 1) {
         currentElements.push({
           id: generateId(),
           type: 'shape',
-          x: paddingX + 15,
-          y: 85,
-          width: 70 - (paddingX * 2),
+          x: 100 - paddingX - 35,
+          y: 100 - footerHeight - 8,
+          width: 35,
           height: 0.5,
-          color: 'accent'
+          color: '#0f172a'
         });
 
         currentElements.push({
           id: generateId(),
           type: 'text',
           content: 'Assinatura do Responsável',
-          x: paddingX + 15,
-          y: 87,
-          width: 70 - (paddingX * 2),
+          x: 100 - paddingX - 35,
+          y: 100 - footerHeight - 7,
+          width: 35,
           height: 5,
-          fontSize: 14,
+          fontSize: aspectRatio === '16:9' ? 12 : 14,
           fontFamily: 'body',
-          color: 'text',
+          color: '#0f172a',
           bold: true,
           align: 'center'
         });
@@ -209,7 +285,7 @@ export function parsePOPDocumentToSlides(text: string, aspectRatio: '16:9' | '9:
       slides.push({
         id: 'pop-' + generateId(),
         elements: currentElements,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#f8fafc' // Slightly off-white/slate-50 background
       });
     });
   });
